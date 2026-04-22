@@ -1,0 +1,51 @@
+#include <tunables/global>
+
+profile romm flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/openssl>
+  #include <abstractions/ssl_certs>
+
+  capability chown,
+  capability dac_override,
+  capability fowner,
+  capability kill,
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+
+  file,
+  network inet stream,
+  network inet6 stream,
+  signal (send) set=(term,int,hup,kill,cont),
+
+  /bin/** ixr,
+  /dev/null rw,
+  /dev/urandom r,
+  /docker-entrypoint.sh ixr,
+  /etc/** r,
+  /init ixr,
+  /lib/** rm,
+  /proc/** r,
+  /run/** rw,
+  /sbin/** ixr,
+  /share/** rw,
+  /src/.venv/** rix,
+  /sys/devices/system/cpu/online r,
+  /tmp/** rwk,
+  /usr/bin/** ixr,
+  /usr/lib/** rm,
+  /usr/local/** rmix,
+  /usr/sbin/** ixr,
+  /var/cache/nginx/** rw,
+  /var/lib/nginx/** rw,
+  /var/log/nginx/** rw,
+  /var/run/** rw,
+  /var/www/html/** r,
+
+  /backend/** rix,
+  /data/** rwk,
+  owner /share/** rwk,
+  owner /romm/** rwk,
+  owner /redis-data/** rwk,
+}

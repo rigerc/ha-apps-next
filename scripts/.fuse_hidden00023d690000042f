@@ -1,0 +1,392 @@
+#!/bin/bash
+#
+# Clone or pull external repositories declared in .externals.json.
+# If the config file does not exist, launches an interactive gum wizard
+# to create one. Automatically adds the target directory to .gitignore.
+
+set -euo pipefail
+
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly PROJECT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+readonly CONFIG_FILE="${PROJECT_DIR}/.externals.json"
+
+readonly BOLD='\033[1m'
+readonly GREEN='\033[32m'
+readonly YELLOW='\033[33m'
+readonly CYAN='\033[36m'
+readonly RED='\033[31m'
+readonly RESET='\033[0m'
+
+err() {
+  echo -e "${RED}error${RESET}: $*" >&2
+}
+
+info() {
+  echo -e "${CYAN}::${RESET} $*"
+}
+
+success() {
+  echo -e "${GREEN}ok${RESET}: $*"
+}
+
+warn() {
+  echo -e "${YELLOW}warn${RESET}: $*"
+}
+
+require_cmd() {
+  if ! command -v "$1" &>/dev/null; then
+    err "'$1' is required but not found in PATH"
+    exit 1
+  fi
+}
+
+ensure_gitignore() {
+  local target_dir="$1"
+  local gitignore="${PROJECT_DIR}/.gitignore"
+  local entry="${target_dir}/"
+
+  if [[ ! -f "${gitignore}" ]]; then
+    echo "# managed by fetch-externals.sh" > "${gitignore}"
+    echo "${entry}" >> "${gitignore}"
+    info "created .gitignore with ${entry}"
+    return
+  fi
+
+  if grep -qFx "${entry}" "${gitignore}" 2>/dev/null; then
+    return
+  fi
+
+  if grep -qF "${entry}" "${gitignore}" 2>/dev/null; then
+    return
+  fi
+
+    {
+      echo ""
+      echo "# managed by fetch-externals.sh"
+      echo "${entry}"
+    } >> "${gitignore}"
+  info "added ${entry} to .gitignore"
+}
+
+create_config_interactive() {
+  local target_dir
+  target_dir="$(gum input \
+    --placeholder="externals" \
+    --prompt="Target directory: " \
+    --header="Where should repos be cloned? (relative to project root)" \
+    --value="externals")"
+
+  if [[ -z "${target_dir}" ]]; then
+    target_dir="externals"
+  fi
+
+  local repos_json="[]"
+
+  while true; do
+    echo ""
+    echo -e "${BOLD}--- Add repository ---${RESET}"
+
+    local name url branch
+    name="$(gum input \
+      --prompt="Name: " \
+      --header="Directory name for this repo" \
+      --placeholder="my-repo")"
+
+    if [[ -z "${name}" ]]; then
+      err "repository name is required"
+      continue
+    fi
+
+    url="$(gum input \
+      --prompt="URL: " \
+      --header="Git remote URL" \
+      --placeholder="https://github.com/user/repo.git")"
+
+    if [[ -z "${url}" ]]; then
+      err "repository URL is required"
+      continue
+    fi
+
+    branch="$(gum input \
+      --prompt="Branch: " \
+      --header="Branch to track" \
+      --placeholder="main" \
+      --value="main")"
+
+    if [[ -z "${branch}" ]]; then
+      branch="main"
+    fi
+
+    local use_sparse
+    use_sparse="$(gum confirm \
+      --affirmative="Yes" \
+      --negative="No" \
+      "Fetch only specific paths (sparse checkout)?" && echo "yes" || echo "no")"
+
+    local sparse_json="[]"
+    if [[ "${use_sparse}" == "yes" ]]; then
+      local sparse_paths
+      sparse_paths="$(gum input \
+        --prompt="Paths: " \
+        --header="Comma-separated paths (files or folders)" \
+        --placeholder="src/lib,docs/README.md")"
+
+      if [[ -n "${sparse_paths}" ]]; then
+        sparse_json="$(echo "${sparse_paths}" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | jq -R . | jq -s .)"
+      fi
+    fi
+
+    local repo_entry
+    repo_entry="$(jq -n \
+      --arg name "${name}" \
+      --arg url "${url}" \
+      --arg branch "${branch}" \
+      --argjson sparse "${sparse_json}" \
+      '{name: $name, url: $url, branch: $branch, sparse: $sparse}')"
+
+    repos_json="$(echo "${repos_json}" | jq --argjson entry "${repo_entry}" '. + [$entry]')"
+
+    echo ""
+    if ! gum confirm "Add another repository?"; then
+      break
+    fi
+  done
+
+  local config
+  config="$(jq -n \
+    --arg target_dir "${target_dir}" \
+    --argjson repos "${repos_json}" \
+    '{target_dir: $target_dir, repos: $repos}')"
+
+  echo "${config}" | jq '.' > "${CONFIG_FILE}"
+  success "created ${CONFIG_FILE}"
+}
+
+clone_repo() {
+  local url="$1"
+  local dest="$2"
+  local branch="$3"
+  shift 3
+  local -a sparse_paths=("$@")
+
+  if [[ ${#sparse_paths[@]} -gt 0 ]]; then
+    git clone --filter=blob:none --no-checkout --branch "${branch}" \
+      "${url}" "${dest}" 2>&1
+    git -C "${dest}" sparse-checkout init --no-cone 2>&1
+    git -C "${dest}" sparse-checkout set "${sparse_paths[@]}" 2>&1
+    git -C "${dest}" checkout 2>&1
+  else
+    git clone --branch "${branch}" "${url}" "${dest}" 2>&1
+  fi
+}
+
+pull_repo() {
+  local dest="$1"
+  shift 1
+  local -a sparse_paths=("$@")
+
+  if [[ ${#sparse_paths[@]} -gt 0 ]]; then
+    git -C "${dest}" sparse-checkout set --no-cone "${sparse_paths[@]}" 2>&1
+  fi
+
+  git -C "${dest}" pull 2>&1
+}
+
+count_incoming() {
+  local dest="$1"
+  local branch="$2"
+  local count
+
+  git -C "${dest}" fetch origin "${branch}" 2>/dev/null || true
+  count="$(git -C "${dest}" log HEAD..FETCH_HEAD --oneline 2>/dev/null | wc -l || echo "0")"
+  echo "${count}"
+}
+
+count_changes() {
+  local dest="$1"
+  local prev_head="$2"
+  local count
+
+  count="$(git -C "${dest}" diff --stat "${prev_head}..HEAD" 2>/dev/null \
+    | tail -1 | grep -oP '\d+ file' | head -1 | grep -oP '\d+' || echo "0")"
+  echo "${count}"
+}
+
+print_summary() {
+  local -n _results="$1"
+  local cloned=0 pulled=0 current=0 failed=0 total_commits=0 total_files=0
+
+  echo ""
+  echo -e "${BOLD}─────────────────────────────────────────────────────────${RESET}"
+  echo -e "${BOLD} Summary${RESET}"
+  echo -e "${BOLD}─────────────────────────────────────────────────────────${RESET}"
+
+  printf "  %-25s %-10s %-10s %-8s %-8s\n" \
+    "REPO" "STATUS" "COMMITS" "FILES" "SPARSE"
+  echo "  ─────────────────────────────────────────────────────────"
+
+  for entry in "${_results[@]}"; do
+    local name status commits files sparse
+    name="$(echo "${entry}" | cut -d'|' -f1)"
+    status="$(echo "${entry}" | cut -d'|' -f2)"
+    commits="$(echo "${entry}" | cut -d'|' -f3)"
+    files="$(echo "${entry}" | cut -d'|' -f4)"
+    sparse="$(echo "${entry}" | cut -d'|' -f5)"
+
+    case "${status}" in
+      cloned)  (( cloned += 1 )) ;;
+      pulled)  (( pulled += 1 )) ;;
+      current) (( current += 1 )) ;;
+      failed)  (( failed += 1 )) ;;
+    esac
+
+    if [[ "${commits}" =~ ^[0-9]+$ ]]; then
+      (( total_commits += commits ))
+    fi
+    if [[ "${files}" =~ ^[0-9]+$ ]]; then
+      (( total_files += files ))
+    fi
+
+    local status_color="${CYAN}"
+    case "${status}" in
+      cloned)  status_color="${GREEN}" ;;
+      pulled)  status_color="${YELLOW}" ;;
+      current) status_color="${CYAN}" ;;
+      failed)  status_color="${RED}" ;;
+    esac
+
+    printf "  %-25s ${status_color}%-10s${RESET} %-10s %-8s %-8s\n" \
+      "${name}" "${status}" "${commits}" "${files}" "${sparse}"
+  done
+
+  echo "  ─────────────────────────────────────────────────────────"
+  printf "  ${BOLD}%-25s${RESET} %-10s %-10s %-8s\n" \
+    "TOTAL" "${cloned}c/${pulled}p/${current}u/${failed}f" \
+    "${total_commits}" "${total_files}"
+  echo -e "${BOLD}─────────────────────────────────────────────────────────${RESET}"
+}
+
+is_interactive() {
+  [[ -t 0 ]] && command -v gum &>/dev/null
+}
+
+main() {
+  require_cmd git
+  require_cmd jq
+
+  if ! is_interactive; then
+    require_cmd gum
+  fi
+
+  if [[ ! -f "${CONFIG_FILE}" ]]; then
+    if is_interactive; then
+      info "no ${CONFIG_FILE} found"
+      echo -e "  Launching interactive setup..."
+      create_config_interactive
+      echo ""
+    else
+      err "no ${CONFIG_FILE} found and running non-interactively"
+      echo "  Create .externals.json manually or run in a TTY:" >&2
+      echo "    {" >&2
+      echo '      "target_dir": "externals",' >&2
+      echo '      "repos": [' >&2
+      echo '        {' >&2
+      echo '          "name": "example",' >&2
+      echo '          "url": "https://github.com/user/repo.git",' >&2
+      echo '          "branch": "main",' >&2
+      echo '          "sparse": []' >&2
+      echo '        }' >&2
+      echo '      ]' >&2
+      echo '    }' >&2
+      exit 1
+    fi
+  fi
+
+  local target_dir
+  target_dir="$(jq -r '.target_dir' "${CONFIG_FILE}")"
+  if [[ -z "${target_dir}" || "${target_dir}" == "null" ]]; then
+    target_dir="externals"
+  fi
+
+  local abs_target="${PROJECT_DIR}/${target_dir}"
+  mkdir -p "${abs_target}"
+
+  ensure_gitignore "${target_dir}"
+
+  local repo_count
+  repo_count="$(jq '.repos | length' "${CONFIG_FILE}")"
+
+  if [[ "${repo_count}" -eq 0 ]]; then
+    warn "no repositories configured in ${CONFIG_FILE}"
+    exit 0
+  fi
+
+  info "processing ${repo_count} repos -> ${target_dir}/"
+  echo ""
+
+  declare -a results=()
+
+  for (( i = 0; i < repo_count; i++ )); do
+    local name url branch
+    name="$(jq -r ".repos[${i}].name" "${CONFIG_FILE}")"
+    url="$(jq -r ".repos[${i}].url" "${CONFIG_FILE}")"
+    branch="$(jq -r ".repos[${i}].branch" "${CONFIG_FILE}")"
+
+    local -a sparse_paths=()
+    local sparse_count
+    sparse_count="$(jq ".repos[${i}].sparse | length" "${CONFIG_FILE}")"
+
+    if [[ "${sparse_count}" -gt 0 ]]; then
+      for (( j = 0; j < sparse_count; j++ )); do
+        sparse_paths+=("$(jq -r ".repos[${i}].sparse[${j}]" "${CONFIG_FILE}")")
+      done
+    fi
+
+    local dest="${abs_target}/${name}"
+    local sparse_label="no"
+    if [[ ${#sparse_paths[@]} -gt 0 ]]; then
+      sparse_label="yes"
+    fi
+
+    if [[ -d "${dest}/.git" ]]; then
+      local prev_head
+      prev_head="$(git -C "${dest}" rev-parse HEAD 2>/dev/null || echo "")"
+
+      local incoming
+      incoming="$(count_incoming "${dest}" "${branch}")"
+
+      if [[ "${incoming}" -eq 0 ]]; then
+        success "${name}: already up to date"
+        results+=("${name}|current|0|0|${sparse_label}")
+        continue
+      fi
+
+      info "${name}: pulling ${incoming} new commit(s)..."
+
+      if pull_repo "${dest}" "${sparse_paths[@]}" 2>&1; then
+        local files
+        files="$(count_changes "${dest}" "${prev_head}")"
+        success "${name}: pulled ${incoming} commit(s), ${files} file(s) changed"
+        results+=("${name}|pulled|${incoming}|${files}|${sparse_label}")
+      else
+        err "${name}: pull failed"
+        results+=("${name}|failed|${incoming}|0|${sparse_label}")
+      fi
+
+    else
+      info "${name}: cloning ${url} (${branch})..."
+
+      if clone_repo "${url}" "${dest}" "${branch}" "${sparse_paths[@]}" 2>&1; then
+        success "${name}: cloned"
+        results+=("${name}|cloned|-|-|${sparse_label}")
+      else
+        err "${name}: clone failed"
+        results+=("${name}|failed|-|-|${sparse_label}")
+      fi
+    fi
+  done
+
+  print_summary results
+}
+
+main "$@"

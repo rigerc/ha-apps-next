@@ -1,0 +1,52 @@
+name: "RomM"
+version: "2.3.1-1"
+slug: "romm"
+description: "Self-hosted ROM manager and player for Home Assistant"
+url: "https://github.com/rigerc/ha-apps-next"
+arch:
+  - aarch64
+  - amd64
+image: "ghcr.io/rigerc/ha-addon-romm"
+init: false
+startup: application
+stage: experimental
+services:
+  - mysql:need
+map:
+  - type: share
+    read_only: false
+ports:
+  8080/tcp: 8080
+ports_description:
+  8080/tcp: "RomM web interface"
+webui: "http://[HOST]:[PORT:8080]/"
+watchdog: "tcp://[HOST]:[PORT:8080]"
+timeout: 120
+apparmor: true
+options:
+  storage_path: "/share/romm"
+  database_name: "romm"
+  log_level: "INFO"
+  kiosk_mode: false
+  enable_rescan_on_filesystem_change: false
+  enable_scheduled_rescan: false
+  scheduled_rescan_cron: "0 3 * * *"
+  disable_emulator_js: false
+  disable_ruffle_rs: false
+schema:
+  storage_path: str
+  database_name: str
+  log_level: "list(TRACE|DEBUG|INFO|NOTICE|WARNING|ERROR|FATAL)"
+  kiosk_mode: bool
+  enable_rescan_on_filesystem_change: bool
+  enable_scheduled_rescan: bool
+  scheduled_rescan_cron: str
+  disable_emulator_js: bool
+  disable_ruffle_rs: bool
+  igdb_client_id: "str?"
+  igdb_client_secret: "password?"
+  screenscraper_user: "str?"
+  screenscraper_password: "password?"
+  retroachievements_api_key: "password?"
+  steamgriddb_api_key: "password?"
+  mobygames_api_key: "password?"

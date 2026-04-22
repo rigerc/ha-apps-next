@@ -1,0 +1,5 @@
+# managed by fetch-externals.sh
+externals/
+.agents/
+.codex/
+.externals.json

@@ -1,0 +1,92 @@
+name: Publish RomM
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/publish-romm.yaml"
+      - "romm/**"
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: ghcr.io/rigerc/ha-addon-romm
+
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: version
+        run: |
+          version="$(awk -F'"' '/^version:/{print $2}' romm/config.yaml)"
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
+  build:
+    needs: metadata
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+          - arch: aarch64
+            platform: linux/arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push architecture image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./romm
+          file: ./romm/Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: true
+          build-args: |
+            BUILD_VERSION=${{ needs.metadata.outputs.version }}
+            BUILD_ARCH=${{ matrix.arch }}
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ needs.metadata.outputs.version }}-${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.arch }}
+
+  manifest:
+    needs:
+      - metadata
+      - build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Publish multi-arch manifest
+        run: |
+          docker buildx imagetools create \
+            --tag "${IMAGE_NAME}:${{ needs.metadata.outputs.version }}" \
+            --tag "${IMAGE_NAME}:latest" \
+            "${IMAGE_NAME}:${{ needs.metadata.outputs.version }}-amd64" \
+            "${IMAGE_NAME}:${{ needs.metadata.outputs.version }}-aarch64"
