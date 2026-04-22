@@ -1,5 +1,5 @@
 name: "RomM"
-version: "2.3.1-1"
+version: "4.8.1-1"
 slug: "romm"
 description: "Self-hosted ROM manager and player for Home Assistant"
 url: "https://github.com/rigerc/ha-apps-next"
