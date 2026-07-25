@@ -4,6 +4,7 @@
 
 - Allow the upstream Nginx entrypoint hooks to execute under the app's
   AppArmor profile, restoring access to the RomM web interface.
+- No configuration or data migration is required for this update.
 
 ## 5.0.0-1
 
