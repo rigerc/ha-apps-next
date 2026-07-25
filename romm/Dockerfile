@@ -2,7 +2,7 @@ ARG ROMM_VERSION="5.0.0"
 FROM ghcr.io/rommapp/romm:${ROMM_VERSION}
 
 ARG BUILD_ARCH
-ARG BUILD_VERSION="5.0.0-3"
+ARG BUILD_VERSION="5.0.0-4"
 
 RUN \
   apk add --no-cache \

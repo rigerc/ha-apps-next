@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.0.0-4
+
+- Allow Python to inspect the RomM backend directory under AppArmor so
+  Alembic can import the application configuration during database migrations.
+- No configuration or data migration is required for this update.
+
 ## 5.0.0-3
 
 - Allow the embedded Valkey service to read its packaged configuration under

@@ -19,6 +19,7 @@ profile romm flags=(attach_disconnected,mediate_deleted) {
   signal (send, receive) set=(term,int,hup,kill,cont),
 
   /bin/** rix,
+  /backend/ r,
   /backend/** rix,
   /dev/null rw,
   /dev/random r,
