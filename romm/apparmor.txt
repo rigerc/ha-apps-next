@@ -24,6 +24,7 @@ profile romm flags=(attach_disconnected,mediate_deleted) {
   /dev/random r,
   /dev/urandom r,
   /docker-entrypoint.sh rix,
+  /docker-entrypoint.d/*.sh rix,
   /etc/** r,
   /etc/nginx/conf.d/** rw,
   /init rix,

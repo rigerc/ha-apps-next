@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.0.0-2
+
+- Allow the upstream Nginx entrypoint hooks to execute under the app's
+  AppArmor profile, restoring access to the RomM web interface.
+
 ## 5.0.0-1
 
 - Rebuild the Home Assistant app around stable RomM 5.0.0.
