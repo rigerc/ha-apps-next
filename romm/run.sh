@@ -231,6 +231,7 @@ main() {
     "${storage_path}/resources" \
     "${storage_path}/sync" \
     "${REDIS_DATA_PATH}"
+  chown romm:romm "${REDIS_DATA_PATH}"
 
   if [[ ! -f "${storage_path}/config/config.yml" ]]; then
     printf '{}\n' >"${storage_path}/config/config.yml"
