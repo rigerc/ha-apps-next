@@ -1,12 +1,12 @@
-name: "RomM"
-version: "5.0.0-1"
-slug: "romm"
-description: "Self-hosted ROM manager and player for Home Assistant"
-url: "https://github.com/rigerc/ha-apps-next"
+name: RomM
+version: 5.0.0-1
+slug: romm
+description: Self-hosted ROM manager and player for Home Assistant
+url: https://github.com/rigerc/ha-apps-next
 arch:
   - aarch64
   - amd64
-image: "ghcr.io/rigerc/ha-addon-romm"
+image: ghcr.io/rigerc/ha-addon-romm
 init: false
 startup: application
 stage: stable
