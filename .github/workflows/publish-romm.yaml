@@ -29,10 +29,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
-      version: ${{ steps.info.outputs.version }}
-      name: ${{ steps.info.outputs.name }}
-      description: ${{ steps.info.outputs.description }}
-      url: ${{ steps.info.outputs.url }}
+      version: ${{ steps.normalize.outputs.version }}
+      name: ${{ steps.normalize.outputs.name }}
+      description: ${{ steps.normalize.outputs.description }}
+      url: ${{ steps.normalize.outputs.url }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@v7.0.0
@@ -48,6 +48,18 @@ jobs:
         uses: home-assistant/actions/helpers/info@master
         with:
           path: "./romm"
+
+      - name: Normalize app metadata
+        id: normalize
+        run: |
+          version=${{ steps.info.outputs.version }}
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          name=${{ steps.info.outputs.name }}
+          echo "name=${name}" >> "$GITHUB_OUTPUT"
+          description=${{ steps.info.outputs.description }}
+          echo "description=${description}" >> "$GITHUB_OUTPUT"
+          url=${{ steps.info.outputs.url }}
+          echo "url=${url}" >> "$GITHUB_OUTPUT"
 
       - name: Prepare architecture matrix
         id: matrix
