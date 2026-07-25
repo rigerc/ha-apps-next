@@ -39,7 +39,7 @@ profile romm flags=(attach_disconnected,mediate_deleted) {
   /usr/bin/** rix,
   /usr/lib/** rm,
   /usr/local/bin/** rix,
-  /usr/local/etc/** r,
+  /usr/local/etc/valkey/valkey.conf r,
   /usr/local/lib/** rmix,
   /usr/sbin/** rix,
   /var/cache/nginx/** rwk,

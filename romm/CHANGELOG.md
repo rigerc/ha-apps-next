@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.0.0-3
+
+- Allow the embedded Valkey service to read its packaged configuration under
+  the app's AppArmor profile.
+- Ensure the persistent Valkey data directory is owned by the RomM user.
+- No configuration or data migration is required for this update.
+
 ## 5.0.0-2
 
 - Allow the upstream Nginx entrypoint hooks to execute under the app's

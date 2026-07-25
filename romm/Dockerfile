@@ -2,7 +2,7 @@ ARG ROMM_VERSION="5.0.0"
 FROM ghcr.io/rommapp/romm:${ROMM_VERSION}
 
 ARG BUILD_ARCH
-ARG BUILD_VERSION="5.0.0-2"
+ARG BUILD_VERSION="5.0.0-3"
 
 RUN \
   apk add --no-cache \
@@ -13,7 +13,9 @@ RUN \
 COPY run.sh /run.sh
 COPY valkey.conf /usr/local/etc/valkey/valkey.conf
 
-RUN chmod 0755 /run.sh
+RUN \
+  chmod 0755 /run.sh \
+  && chmod 0644 /usr/local/etc/valkey/valkey.conf
 
 LABEL \
   io.hass.type="app" \
