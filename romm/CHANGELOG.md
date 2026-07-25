@@ -1,12 +1,12 @@
 # Changelog
 
-## 4.8.1-1
+## 5.0.0-1
 
-- Update upstream base image to `rommapp/romm:4.8.1`
-
-## 2.3.1-1
-
-- Initial Home Assistant packaging for RomM
-- Added Home Assistant MariaDB service discovery
-- Added persistent storage bootstrap under `/share/romm`
-- Added publish workflow and app metadata
+- Rebuild the Home Assistant app around stable RomM 5.0.0.
+- Correct Home Assistant MariaDB service-response handling.
+- Persist the embedded Valkey store in the app data directory.
+- Preserve RomM libraries and assets below `/share/romm`.
+- Add an optional public base URL and Hasheous configuration.
+- Add a health watchdog, cold backups, and a tightened AppArmor profile.
+- Publish signed `amd64` and `aarch64` images with the current Home Assistant
+  builder actions.

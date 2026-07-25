@@ -1,23 +1,31 @@
 # Home Assistant Apps
 
-This repository contains Home Assistant apps packaged for local install or
-distribution through a custom app repository.
+This repository contains Home Assistant apps distributed as signed,
+multi-architecture container images.
 
-## Included Apps
+## Included apps
 
-- `RomM`: A Home Assistant-packaged wrapper around upstream RomM with
-  persistent storage under `/share/romm`, direct web access on port `8080`,
-  and MariaDB service discovery through Home Assistant.
+### RomM
 
-## Install
+RomM is a self-hosted ROM manager and player. The app packages stable RomM
+5.0.0 with:
 
-1. In Home Assistant, go to **Settings** -> **Apps** -> **App Store**.
-2. Open the repository menu and add this Git repository URL.
-3. Install the `RomM` app from the repository.
-4. Install and start the Home Assistant `MariaDB` app before starting `RomM`.
+- Browser-based EmulatorJS and Ruffle playback.
+- Automatic Home Assistant MariaDB service discovery.
+- Persistent library and application data below `/share/romm`.
+- Signed `amd64` and `aarch64` images published to GHCR.
 
-## Notes
+Install and start the official Home Assistant MariaDB app before starting
+RomM.
 
-- The `RomM` app is currently exposed through its own `webui` rather than
-  Home Assistant ingress.
-- Image publishing is configured for `ghcr.io/rigerc/ha-addon-romm`.
+## Installation
+
+1. In Home Assistant, open **Settings** > **Apps** > **App Store**.
+2. Open the repository menu and add:
+   `https://github.com/rigerc/ha-apps-next`
+3. Install the official MariaDB app and wait for it to start.
+4. Install RomM from this repository.
+5. Start RomM and select **Open Web UI**.
+
+See the RomM app documentation for storage, configuration, networking, and
+backup details.

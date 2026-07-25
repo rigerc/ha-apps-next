@@ -1,5 +1,5 @@
 name: "RomM"
-version: "4.8.1-1"
+version: "5.0.0-1"
 slug: "romm"
 description: "Self-hosted ROM manager and player for Home Assistant"
 url: "https://github.com/rigerc/ha-apps-next"
@@ -9,7 +9,8 @@ arch:
 image: "ghcr.io/rigerc/ha-addon-romm"
 init: false
 startup: application
-stage: experimental
+stage: stable
+backup: cold
 services:
   - mysql:need
 map:
@@ -20,8 +21,8 @@ ports:
 ports_description:
   8080/tcp: "RomM web interface"
 webui: "http://[HOST]:[PORT:8080]/"
-watchdog: "tcp://[HOST]:[PORT:8080]"
-timeout: 120
+watchdog: "http://[HOST]:[PORT:8080]/api/heartbeat"
+timeout: 300
 apparmor: true
 options:
   storage_path: "/share/romm"
@@ -33,16 +34,19 @@ options:
   scheduled_rescan_cron: "0 3 * * *"
   disable_emulator_js: false
   disable_ruffle_rs: false
+  hasheous_api_enabled: true
 schema:
   storage_path: str
-  database_name: str
-  log_level: "list(TRACE|DEBUG|INFO|NOTICE|WARNING|ERROR|FATAL)"
+  database_name: "match(^[A-Za-z0-9_]+$)"
+  base_url: "url?"
+  log_level: "list(DEBUG|INFO|WARNING|ERROR|CRITICAL)"
   kiosk_mode: bool
   enable_rescan_on_filesystem_change: bool
   enable_scheduled_rescan: bool
   scheduled_rescan_cron: str
   disable_emulator_js: bool
   disable_ruffle_rs: bool
+  hasheous_api_enabled: bool
   igdb_client_id: "str?"
   igdb_client_secret: "password?"
   screenscraper_user: "str?"

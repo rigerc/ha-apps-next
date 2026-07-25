@@ -1,34 +1,40 @@
 configuration:
   storage_path:
     name: Storage path
-    description: Base path under /share used for RomM library, assets, resources, and config data.
+    description: Base directory below /share for the RomM library and data.
   database_name:
     name: Database name
-    description: MariaDB database name used by RomM. The app creates it automatically if needed.
+    description: MariaDB database created and used by RomM.
+  base_url:
+    name: Public base URL
+    description: Optional public URL used for generated links and redirects.
   log_level:
     name: Log level
     description: Runtime logging level for RomM and its bundled services.
   kiosk_mode:
     name: Kiosk mode
-    description: Start RomM in read-only mode for public or display-only access.
+    description: Start RomM in read-only mode for public or display-only use.
   enable_rescan_on_filesystem_change:
     name: Rescan on file changes
-    description: Enable RomM's file watcher to trigger rescans when library files change.
+    description: Watch the library and rescan after filesystem changes.
   enable_scheduled_rescan:
     name: Scheduled rescan
     description: Enable scheduled library rescans.
   scheduled_rescan_cron:
     name: Scheduled rescan cron
-    description: Cron expression used when scheduled rescans are enabled.
+    description: Cron expression used for scheduled library rescans.
   disable_emulator_js:
     name: Disable EmulatorJS
     description: Disable in-browser gameplay through EmulatorJS.
   disable_ruffle_rs:
-    name: Disable RuffleRS
-    description: Disable Flash playback through RuffleRS.
+    name: Disable Ruffle
+    description: Disable in-browser Flash playback through Ruffle.
+  hasheous_api_enabled:
+    name: Enable Hasheous
+    description: Use Hasheous as a metadata provider.
   igdb_client_id:
     name: IGDB client ID
-    description: Optional IGDB API client ID for RomM metadata enrichment.
+    description: Optional IGDB API client ID.
   igdb_client_secret:
     name: IGDB client secret
     description: Optional IGDB API client secret.
@@ -47,3 +53,5 @@ configuration:
   mobygames_api_key:
     name: MobyGames API key
     description: Optional MobyGames API key.
+network:
+  8080/tcp: RomM web interface
