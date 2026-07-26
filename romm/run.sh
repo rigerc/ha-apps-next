@@ -7,6 +7,7 @@ set -euo pipefail
 readonly OPTIONS_FILE="/data/options.json"
 readonly SECRET_FILE="/data/romm_auth_secret_key"
 readonly REDIS_DATA_PATH="/data/redis"
+readonly UPSTREAM_LIBRARY_PATH="/romm/library"
 readonly SUPERVISOR_URL="${SUPERVISOR_URL:-http://supervisor}"
 readonly MYSQL_SERVICE_URL="${SUPERVISOR_URL}/services/mysql"
 readonly DEFAULT_STORAGE_PATH="/share/romm"
@@ -232,6 +233,14 @@ main() {
     "${storage_path}/sync" \
     "${REDIS_DATA_PATH}"
   chown romm:romm "${REDIS_DATA_PATH}"
+
+  if [[ -e "${UPSTREAM_LIBRARY_PATH}" ]] \
+    && [[ ! -L "${UPSTREAM_LIBRARY_PATH}" ]]; then
+    fail \
+      "Cannot link ${UPSTREAM_LIBRARY_PATH} to ${storage_path}/library:" \
+      "the upstream path already exists and is not a symbolic link"
+  fi
+  ln -sfn "${storage_path}/library" "${UPSTREAM_LIBRARY_PATH}"
 
   if [[ ! -f "${storage_path}/config/config.yml" ]]; then
     printf '{}\n' >"${storage_path}/config/config.yml"

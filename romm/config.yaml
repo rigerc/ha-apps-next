@@ -1,5 +1,5 @@
 name: RomM
-version: 5.0.0-4
+version: 5.0.0-5
 slug: romm
 description: Self-hosted ROM manager and player for Home Assistant
 url: https://github.com/rigerc/ha-apps-next

@@ -2,7 +2,9 @@ ARG ROMM_VERSION="5.0.0"
 FROM ghcr.io/rommapp/romm:${ROMM_VERSION}
 
 ARG BUILD_ARCH
-ARG BUILD_VERSION="5.0.0-4"
+ARG BUILD_VERSION="5.0.0-5"
+
+ENV GUNICORN_CMD_ARGS="--no-control-socket"
 
 RUN \
   apk add --no-cache \

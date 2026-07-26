@@ -1,5 +1,15 @@
 # Changelog
 
+## 5.0.0-5
+
+- Allow libmagic to read its compiled MIME database under AppArmor so RomM
+  migrations can import the filesystem handlers.
+- Disable Gunicorn's unused control socket so it does not attempt to create
+  runtime files below `/root`.
+- Link the upstream filesystem watcher path to the configured library
+  directory so filesystem-change rescans work with `/share` storage.
+- No configuration or data migration is required for this update.
+
 ## 5.0.0-4
 
 - Allow Python to inspect the RomM backend directory under AppArmor so
