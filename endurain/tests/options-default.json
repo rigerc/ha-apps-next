@@ -1,0 +1,8 @@
+{
+  "endurain_host": "http://homeassistant.local:8081",
+  "timezone": "UTC",
+  "log_level": "info",
+  "behind_proxy": false,
+  "trusted_proxies": "",
+  "allow_api_key_query_param": false
+}

@@ -1,0 +1,51 @@
+configuration:
+  endurain_host:
+    name: Public Endurain origin
+    description: Exact browser-visible origin, without a trailing slash or path.
+  timezone:
+    name: Time zone
+    description: IANA time zone used for activities without location-derived time data.
+  log_level:
+    name: Log level
+    description: Runtime logging level for Endurain.
+  behind_proxy:
+    name: Behind reverse proxy
+    description: Trust forwarded client details from explicitly configured proxies.
+  trusted_proxies:
+    name: Trusted proxies
+    description: Comma-separated IPs, CIDRs, or hostnames; wildcard is not accepted.
+  smtp_host:
+    name: SMTP host
+    description: Optional mail server used for password-reset messages.
+  smtp_port:
+    name: SMTP port
+    description: Port used by the SMTP server.
+  smtp_username:
+    name: SMTP username
+    description: Optional SMTP account name.
+  smtp_password:
+    name: SMTP password
+    description: Optional SMTP account password.
+  smtp_from:
+    name: SMTP sender
+    description: Optional verified From address for outgoing mail.
+  smtp_secure:
+    name: Secure SMTP
+    description: Enable encrypted SMTP communication.
+  smtp_secure_type:
+    name: SMTP security type
+    description: Use STARTTLS or implicit SSL for SMTP.
+  allowed_redirect_schemes:
+    name: Allowed redirect schemes
+    description: Comma-separated custom mobile callback schemes.
+  ssrf_allowed_hosts:
+    name: SSRF allowed hosts
+    description: Narrow hostname or CIDR exceptions for private OIDC endpoints.
+  csp_additional_connect_src:
+    name: Additional CSP connections
+    description: Comma-separated origins required by a forward-auth proxy.
+  allow_api_key_query_param:
+    name: Allow query-string API keys
+    description: Allow less-safe api_key query parameters when a client cannot send X-API-Key.
+network:
+  8080/tcp: Endurain web interface

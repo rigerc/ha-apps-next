@@ -1,0 +1,18 @@
+{
+  "endurain_host": "https://endurain.example.com",
+  "timezone": "Europe/Amsterdam",
+  "log_level": "debug",
+  "behind_proxy": true,
+  "trusted_proxies": "192.168.1.10,proxy.internal",
+  "smtp_host": "smtp.example.com",
+  "smtp_port": 465,
+  "smtp_username": "endurain@example.com",
+  "smtp_password": "smoke-smtp-password-do-not-log",
+  "smtp_from": "endurain@example.com",
+  "smtp_secure": true,
+  "smtp_secure_type": "ssl",
+  "allowed_redirect_schemes": "endurain,gadgetbridge",
+  "ssrf_allowed_hosts": "auth.internal.example.com,10.10.0.0/24",
+  "csp_additional_connect_src": "https://auth.example.com,wss://events.example.com",
+  "allow_api_key_query_param": true
+}

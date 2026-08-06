@@ -1,0 +1,69 @@
+#include <tunables/global>
+
+profile endurain flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/openssl>
+  #include <abstractions/ssl_certs>
+
+  capability chown,
+  capability dac_override,
+  capability fowner,
+  capability kill,
+  capability setgid,
+  capability setuid,
+
+  network inet stream,
+  network inet dgram,
+  network inet6 stream,
+  network inet6 dgram,
+  network unix stream,
+  network unix dgram,
+  signal (send, receive) set=(term,int,hup,kill,cont),
+
+  /bin/bash rix,
+  /bin/busybox rix,
+  /bin/sh rix,
+  /docker-entrypoint.d/start.sh rix,
+  /run.sh rix,
+  /sbin/su-exec rix,
+  /usr/bin/initdb rix,
+  /usr/bin/jq rix,
+  /usr/bin/openssl rix,
+  /usr/bin/pg_ctl rix,
+  /usr/bin/pg_isready rix,
+  /usr/bin/postgres rix,
+  /usr/bin/psql rix,
+  /usr/bin/valkey-cli rix,
+  /usr/bin/valkey-server rix,
+  /usr/bin/curl rix,
+  /usr/local/bin/python* rmix,
+  /usr/local/bin/uvicorn rix,
+
+  /app/backend/ r,
+  /app/backend/** r,
+  /app/frontend/ r,
+  /app/frontend/dist/** r,
+  /app/frontend/dist/env.js rw,
+  /app/frontend/dist/index.html rw,
+  /dev/null rw,
+  /dev/random r,
+  /dev/shm/** rwk,
+  /dev/urandom r,
+  /etc/** r,
+  /lib/** rm,
+  /proc/** r,
+  /sys/devices/system/cpu/online r,
+  /tmp/** rwk,
+  /usr/lib/** rm,
+  /usr/local/etc/valkey/valkey.conf r,
+  /usr/local/lib/** rm,
+  /usr/share/** r,
+  /var/lib/postgresql/ r,
+  /var/lib/valkey/ r,
+
+  /data/** rwkl,
+  /run/endurain/** rwk,
+  /run/postgresql/** rwk,
+  /run/secrets/** rwk,
+}

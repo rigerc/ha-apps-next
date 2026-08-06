@@ -1,0 +1,45 @@
+name: Endurain
+version: 0.19.0-1
+slug: endurain
+description: Self-hosted fitness and activity tracking for Home Assistant
+url: https://github.com/rigerc/ha-apps-next
+arch:
+  - aarch64
+  - amd64
+image: ghcr.io/rigerc/ha-addon-endurain
+init: false
+startup: application
+stage: experimental
+backup: cold
+ports:
+  8080/tcp: 8081
+ports_description:
+  8080/tcp: "Endurain web interface"
+webui: "http://[HOST]:[PORT:8080]/"
+watchdog: "http://[HOST]:[PORT:8080]/api/v1/about"
+timeout: 300
+apparmor: true
+options:
+  endurain_host: "http://homeassistant.local:8081"
+  timezone: "UTC"
+  log_level: "info"
+  behind_proxy: false
+  trusted_proxies: ""
+  allow_api_key_query_param: false
+schema:
+  endurain_host: url
+  timezone: str
+  log_level: "list(critical|error|warning|info|debug|trace)"
+  behind_proxy: bool
+  trusted_proxies: str
+  smtp_host: "str?"
+  smtp_port: "port?"
+  smtp_username: "str?"
+  smtp_password: "password?"
+  smtp_from: "email?"
+  smtp_secure: "bool?"
+  smtp_secure_type: "list(starttls|ssl)?"
+  allowed_redirect_schemes: "str?"
+  ssrf_allowed_hosts: "str?"
+  csp_additional_connect_src: "str?"
+  allow_api_key_query_param: bool

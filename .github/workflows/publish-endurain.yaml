@@ -1,0 +1,150 @@
+name: Build and publish Endurain
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/publish-endurain.yaml"
+      - "endurain/**"
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/publish-endurain.yaml"
+      - "endurain/**"
+  workflow_dispatch:
+
+env:
+  ARCHITECTURES: '["amd64", "aarch64"]'
+  IMAGE_NAME: "ha-addon-endurain"
+  REGISTRY_PREFIX: "ghcr.io/rigerc"
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Validate and prepare
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      version: ${{ steps.normalize.outputs.version }}
+      name: ${{ steps.normalize.outputs.name }}
+      description: ${{ steps.normalize.outputs.description }}
+      url: ${{ steps.normalize.outputs.url }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.0
+
+      - name: Validate runtime files
+        run: |
+          shellcheck endurain/run.sh endurain/tests/smoke.sh
+          bash -n endurain/run.sh endurain/tests/smoke.sh
+          jq empty endurain/tests/options-default.json endurain/tests/options-full.json
+          test ! -e endurain/build.yaml
+          ! grep -R "BUILD_FROM" endurain/Dockerfile endurain/config.yaml
+
+      - name: Read app metadata
+        id: info
+        uses: home-assistant/actions/helpers/info@master
+        with:
+          path: "./endurain"
+
+      - name: Normalize app metadata
+        id: normalize
+        run: |
+          version=${{ steps.info.outputs.version }}
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          name=${{ steps.info.outputs.name }}
+          echo "name=${name}" >> "$GITHUB_OUTPUT"
+          description=${{ steps.info.outputs.description }}
+          echo "description=${description}" >> "$GITHUB_OUTPUT"
+          url=${{ steps.info.outputs.url }}
+          echo "url=${url}" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare architecture matrix
+        id: matrix
+        uses: home-assistant/builder/actions/prepare-multi-arch-matrix@2026.06.0
+        with:
+          architectures: ${{ env.ARCHITECTURES }}
+          image-name: ${{ env.IMAGE_NAME }}
+          registry-prefix: ${{ env.REGISTRY_PREFIX }}
+
+  smoke:
+    name: Smoke-test amd64 image
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.0
+
+      - name: Build local image
+        run: |
+          docker build \
+            --build-arg BUILD_ARCH=amd64 \
+            --build-arg BUILD_VERSION=${{ needs.prepare.outputs.version }} \
+            --tag local/ha-addon-endurain:${{ needs.prepare.outputs.version }} \
+            endurain
+
+      - name: Run smoke suite
+        run: endurain/tests/smoke.sh local/ha-addon-endurain:${{ needs.prepare.outputs.version }}
+
+  build:
+    name: Build ${{ matrix.arch }} image
+    needs:
+      - prepare
+      - smoke
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Build image
+        uses: home-assistant/builder/actions/build-image@2026.06.0
+        with:
+          arch: ${{ matrix.arch }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          context: "./endurain"
+          image: ${{ matrix.image }}
+          image-tags: |
+            ${{ needs.prepare.outputs.version }}
+            latest
+          labels: |
+            io.hass.type=app
+            io.hass.name=${{ needs.prepare.outputs.name }}
+            io.hass.description=${{ needs.prepare.outputs.description }}
+            io.hass.url=${{ needs.prepare.outputs.url }}
+          push: ${{ github.event_name == 'push' }}
+          version: ${{ needs.prepare.outputs.version }}
+
+  manifest:
+    name: Publish multi-architecture manifest
+    needs:
+      - prepare
+      - build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      packages: write
+    steps:
+      - name: Publish manifest
+        uses: home-assistant/builder/actions/publish-multi-arch-manifest@2026.06.0
+        with:
+          architectures: ${{ env.ARCHITECTURES }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          image-name: ${{ env.IMAGE_NAME }}
+          image-tags: |
+            ${{ needs.prepare.outputs.version }}
+            latest
+          registry-prefix: ${{ env.REGISTRY_PREFIX }}

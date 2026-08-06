@@ -18,14 +18,27 @@ RomM is a self-hosted ROM manager and player. The app packages stable RomM
 Install and start the official Home Assistant MariaDB app before starting
 RomM.
 
+### Endurain
+
+Endurain is a self-hosted fitness and activity tracker. The app packages stable
+Endurain 0.19.0 with:
+
+- Activity imports, maps, statistics, goals, Garmin, and Strava support.
+- Private embedded PostgreSQL 18 and Valkey services.
+- All application and database state in one cold-backed-up app data directory.
+- Signed `amd64` and `aarch64` images published to GHCR.
+
+No separate database app is required. This is an unofficial package and is not
+sponsored or endorsed by the Endurain project.
+
 ## Installation
 
 1. In Home Assistant, open **Settings** > **Apps** > **App Store**.
 2. Open the repository menu and add:
    `https://github.com/rigerc/ha-apps-next`
-3. Install the official MariaDB app and wait for it to start.
-4. Install RomM from this repository.
-5. Start RomM and select **Open Web UI**.
+3. Select the app to install.
+4. For RomM only, install and start the official MariaDB app first.
+5. Start the selected app and choose **Open Web UI**.
 
-See the RomM app documentation for storage, configuration, networking, and
-backup details.
+See each app's documentation for storage, configuration, networking, backup,
+and upgrade details.
