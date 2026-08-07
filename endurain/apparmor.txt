@@ -63,7 +63,10 @@ profile endurain flags=(attach_disconnected,mediate_deleted) {
   /var/lib/valkey/ r,
 
   /data/** rwkl,
+  /run/endurain/ rw,
   /run/endurain/** rwk,
+  /run/postgresql/ rw,
   /run/postgresql/** rwk,
+  /run/secrets/ rw,
   /run/secrets/** rwk,
 }
