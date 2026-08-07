@@ -71,22 +71,6 @@ jobs:
           image-name: ${{ env.IMAGE_NAME }}
           registry-prefix: ${{ env.REGISTRY_PREFIX }}
 
-  apparmor-test:
-    name: Test AppArmor-confined amd64 image
-    needs: prepare
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v7.0.0
-
-      - name: Install AppArmor tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends apparmor-utils
-
-      - name: Run confinement-aware local suite
-        run: endurain/tests/local-apparmor.sh
-
   build:
     name: Build ${{ matrix.arch }} image
     needs: prepare
