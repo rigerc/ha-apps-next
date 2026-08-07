@@ -9,6 +9,12 @@ readonly TEST_ROOT
 readonly DEFAULT_NAME="endurain-smoke-default-$$"
 readonly FULL_NAME="endurain-smoke-full-$$"
 CONTAINERS=()
+DOCKER_SECURITY_ARGS=()
+
+if [[ -n "${APPARMOR_PROFILE:-}" ]]; then
+  DOCKER_SECURITY_ARGS+=(--security-opt "apparmor=${APPARMOR_PROFILE}")
+fi
+readonly -a DOCKER_SECURITY_ARGS
 
 log() {
   printf '[smoke] %s\n' "$*"
@@ -44,6 +50,7 @@ start_new_container() {
 
   CONTAINERS+=("${name}")
   docker run \
+    "${DOCKER_SECURITY_ARGS[@]}" \
     --detach \
     --name "${name}" \
     --volume "${data_dir}:/data" \
@@ -106,6 +113,7 @@ assert_rejected() {
   printf '%s\n' "${options}" >"${data_dir}/options.json"
   CONTAINERS+=("${name}")
   if docker run \
+    "${DOCKER_SECURITY_ARGS[@]}" \
     --name "${name}" \
     --volume "${data_dir}:/data" \
     "${IMAGE}" >"${data_dir}/output.log" 2>&1; then
@@ -144,6 +152,11 @@ log "starting a fresh app with default options"
 default_data="$(new_data_dir default endurain/tests/options-default.json)"
 start_new_container "${DEFAULT_NAME}" "${default_data}"
 wait_for_health "${DEFAULT_NAME}"
+
+if [[ -n "${APPARMOR_PROFILE:-}" ]]; then
+  [[ "$(docker exec "${DEFAULT_NAME}" cat /proc/1/attr/current)" == \
+    "${APPARMOR_PROFILE} (enforce)" ]]
+fi
 
 docker exec "${DEFAULT_NAME}" su-exec postgres \
   pg_isready --host=/run/postgresql --username=postgres >/dev/null

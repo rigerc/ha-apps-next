@@ -37,6 +37,11 @@ profile endurain flags=(attach_disconnected,mediate_deleted) {
   /usr/bin/valkey-cli rix,
   /usr/bin/valkey-server rix,
   /usr/bin/curl rix,
+  /usr/libexec/postgresql18/initdb rix,
+  /usr/libexec/postgresql18/pg_ctl rix,
+  /usr/libexec/postgresql18/pg_isready rix,
+  /usr/libexec/postgresql18/postgres rix,
+  /usr/libexec/postgresql18/psql rix,
   /usr/local/bin/python* rmix,
   /usr/local/bin/uvicorn rix,
 
