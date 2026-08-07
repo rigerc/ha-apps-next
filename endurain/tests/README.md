@@ -23,10 +23,12 @@ The driver:
 5. reports matching kernel denials and fails on any unexpected denial; and
 6. removes its containers, temporary data, and AppArmor profile on exit.
 
-The audit filter recognizes three exact non-blocking probes: Bash opening
-`/dev/tty` without a TTY, BusyBox `install` requesting optional `fsetid`, and
-PostgreSQL's writable mmap check reported as `/` for a Docker bind mount. Any
-other denial fails the process and is printed with its operation and path.
+The audit filter recognizes exact non-blocking probes: Bash opening `/dev/tty`
+without a TTY, BusyBox requesting optional `fsetid`, PostgreSQL's writable mmap
+check reported as `/` for a Docker bind mount, and Python library discovery
+probing `ldconfig`, `gcc`, and `ld`. Those discovery executables intentionally
+remain denied. Any other denial fails the process and is printed with its
+operation and path.
 
 For a quick functional check without Home Assistant confinement, build an image
 and call the smoke suite directly:

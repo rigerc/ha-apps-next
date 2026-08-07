@@ -132,13 +132,21 @@ filter_actionable_denials() {
       continue
     fi
     if [[ "${denial}" == *'operation="capable"'* \
-      && "${denial}" == *'comm="install"'* \
+      && ("${denial}" == *'comm="install"'* \
+        || "${denial}" == *'comm="chmod"'*) \
       && "${denial}" == *'capname="fsetid"'* ]]; then
       continue
     fi
     if [[ "${denial}" == *'operation="file_mmap"'* \
       && "${denial}" == *'name="/"'* \
       && "${denial}" == *'comm="postgres"'* ]]; then
+      continue
+    fi
+    if [[ "${denial}" == *'operation="exec"'* \
+      && "${denial}" == *'comm="uvicorn"'* \
+      && ("${denial}" == *'name="/sbin/ldconfig"'* \
+        || "${denial}" == *'name="/usr/bin/gcc"'* \
+        || "${denial}" == *'name="/usr/bin/ld"'*) ]]; then
       continue
     fi
     printf '%s\n' "${denial}"
