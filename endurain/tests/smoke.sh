@@ -68,7 +68,10 @@ wait_for_health() {
     fi
     if docker exec "${name}" \
       curl --fail --silent http://127.0.0.1:8080/api/v1/about >/dev/null 2>&1; then
-      return 0
+      if docker logs "${name}" 2>&1 \
+        | grep -q '\[endurain\] Endurain is ready on port 8080'; then
+        return 0
+      fi
     fi
     sleep 1
   done
