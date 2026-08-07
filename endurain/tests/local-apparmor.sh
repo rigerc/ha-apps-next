@@ -122,7 +122,31 @@ read_denials() {
     >&2
 }
 
+filter_actionable_denials() {
+  local denial
+
+  while IFS= read -r denial; do
+    if [[ "${denial}" == *'operation="open"'* \
+      && "${denial}" == *'name="/dev/tty"'* \
+      && "${denial}" == *'comm="run.sh"'* ]]; then
+      continue
+    fi
+    if [[ "${denial}" == *'operation="capable"'* \
+      && "${denial}" == *'comm="install"'* \
+      && "${denial}" == *'capname="fsetid"'* ]]; then
+      continue
+    fi
+    if [[ "${denial}" == *'operation="file_mmap"'* \
+      && "${denial}" == *'name="/"'* \
+      && "${denial}" == *'comm="postgres"'* ]]; then
+      continue
+    fi
+    printf '%s\n' "${denial}"
+  done
+}
+
 run_confined_suite() {
+  local actionable_denials
   local denials
   local image="$1"
   local started_at
@@ -136,8 +160,12 @@ run_confined_suite() {
 
   denials="$(read_denials "${started_at}")"
   if [[ -n "${denials}" ]]; then
-    printf '%s\n' "${denials}" >&2
-    fail "The kernel reported AppArmor denials"
+    actionable_denials="$(filter_actionable_denials <<<"${denials}")"
+    if [[ -n "${actionable_denials}" ]]; then
+      printf '%s\n' "${actionable_denials}" >&2
+      fail "The kernel reported unexpected AppArmor denials"
+    fi
+    log "kernel audit contained only documented non-blocking probes"
   fi
   ((test_status == 0)) \
     || fail "The confined smoke suite failed with status ${test_status}"

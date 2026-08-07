@@ -20,8 +20,13 @@ The driver:
 3. loads an isolated, enforced copy of `endurain/apparmor.txt`;
 4. attaches that profile to every application container in the full smoke
    suite and verifies the profile reported by the container;
-5. reports matching kernel denials and fails on any denial; and
+5. reports matching kernel denials and fails on any unexpected denial; and
 6. removes its containers, temporary data, and AppArmor profile on exit.
+
+The audit filter recognizes three exact non-blocking probes: Bash opening
+`/dev/tty` without a TTY, BusyBox `install` requesting optional `fsetid`, and
+PostgreSQL's writable mmap check reported as `/` for a Docker bind mount. Any
+other denial fails the process and is printed with its operation and path.
 
 For a quick functional check without Home Assistant confinement, build an image
 and call the smoke suite directly:

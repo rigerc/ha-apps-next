@@ -4,6 +4,8 @@ FROM codeberg.org/endurain-project/endurain:${ENDURAIN_VERSION}@sha256:a43273a30
 ARG BUILD_ARCH
 ARG BUILD_VERSION="0.19.0-3"
 
+ENV PYTHONDONTWRITEBYTECODE=1
+
 USER root
 
 RUN \
