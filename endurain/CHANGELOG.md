@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.19.0-2
+
+- Allow AppArmor to create the Endurain, PostgreSQL, and secrets runtime
+  directories below `/run`, restoring startup on Home Assistant.
+- No configuration or data migration is required for this update.
+
 ## 0.19.0-1
 
 - Package stable Endurain 0.19.0 from its digest-pinned upstream image.
