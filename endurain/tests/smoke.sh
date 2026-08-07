@@ -126,16 +126,29 @@ assert_rejected() {
 assert_child_failure() {
   local name="$1"
   local service="$2"
+  local exit_code
   local logs
 
+  log "forcing ${service} child failure"
   docker start "${name}" >/dev/null
   wait_for_health "${name}"
   docker exec "${name}" sh -c \
     "kill -KILL \"\$(cat /run/endurain/${service}.pid)\""
   wait_for_stop "${name}"
-  [[ "$(docker inspect --format '{{.State.ExitCode}}' "${name}")" != "0" ]]
+  exit_code="$(docker inspect --format '{{.State.ExitCode}}' "${name}")"
   logs="$(docker logs "${name}" 2>&1)"
-  grep -qi 'exited unexpectedly' <<<"${logs}"
+  if [[ "${exit_code}" == "0" ]]; then
+    printf 'container exited successfully after %s was killed\n' \
+      "${service}" >&2
+    printf '%s\n' "${logs}" >&2
+    return 1
+  fi
+  if ! grep -qi 'exited unexpectedly' <<<"${logs}"; then
+    printf 'missing child-failure log after %s was killed\n' \
+      "${service}" >&2
+    printf '%s\n' "${logs}" >&2
+    return 1
+  fi
 }
 
 assert_not_logged() {
