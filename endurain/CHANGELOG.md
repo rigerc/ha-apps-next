@@ -7,6 +7,8 @@
 - Add a confinement-aware local test process that loads the shipped AppArmor
   profile, runs the complete smoke suite under enforcement, and reports kernel
   denials.
+- Disable Python bytecode writes and allow Valkey's read-only host capability
+  probes to keep the AppArmor audit signal focused on actionable denials.
 - No configuration or data migration is required for this update.
 
 ## 0.19.0-2
