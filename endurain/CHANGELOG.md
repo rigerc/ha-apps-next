@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.19.0-3
+
+- Allow AppArmor to execute Alpine's resolved PostgreSQL 18 programs below
+  `/usr/libexec`, restoring database initialization and management.
+- Add a confinement-aware local test process that loads the shipped AppArmor
+  profile, runs the complete smoke suite under enforcement, and reports kernel
+  denials.
+- No configuration or data migration is required for this update.
+
 ## 0.19.0-2
 
 - Allow AppArmor to create the Endurain, PostgreSQL, and secrets runtime
