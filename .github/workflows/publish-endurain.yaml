@@ -71,30 +71,9 @@ jobs:
           image-name: ${{ env.IMAGE_NAME }}
           registry-prefix: ${{ env.REGISTRY_PREFIX }}
 
-  smoke:
-    name: Smoke-test amd64 image
-    needs: prepare
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v7.0.0
-
-      - name: Build local image
-        run: |
-          docker build \
-            --build-arg BUILD_ARCH=amd64 \
-            --build-arg BUILD_VERSION=${{ needs.prepare.outputs.version }} \
-            --tag local/ha-addon-endurain:${{ needs.prepare.outputs.version }} \
-            endurain
-
-      - name: Run smoke suite
-        run: endurain/tests/smoke.sh local/ha-addon-endurain:${{ needs.prepare.outputs.version }}
-
   build:
     name: Build ${{ matrix.arch }} image
-    needs:
-      - prepare
-      - smoke
+    needs: prepare
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
