@@ -102,10 +102,41 @@ read_denials() {
   fi
 }
 
+filter_actionable_denials() {
+  local denial
+
+  while IFS= read -r denial; do
+    if [[ "${denial}" == *'operation="open"'* \
+      && "${denial}" == *'name="/dev/tty"'* \
+      && ("${denial}" == *'comm="run.sh"'* \
+        || "${denial}" == *'comm="bash"'*) ]]; then
+      continue
+    fi
+    if [[ "${denial}" == *'operation="open"'* \
+      && "${denial}" == *'name="/usr/local/bin/"'* \
+      && "${denial}" == *'comm="granian"'* ]]; then
+      continue
+    fi
+    if [[ "${denial}" == *'operation="open"'* \
+      && "${denial}" == *'name="/sys/fs/cgroup/cpu.max"'* \
+      && "${denial}" == *'comm="granian"'* ]]; then
+      continue
+    fi
+    if [[ "${denial}" == *'operation="unlink"'* \
+      && "${denial}" == *'name="/usr/local/lib/python3'* \
+      && "${denial}" == *'/site-packages/urllib3/'* \
+      && "${denial}" == *'comm="python3"'* ]]; then
+      continue
+    fi
+    printf '%s\n' "${denial}"
+  done
+}
+
 run_confined_suite() {
   local image="$1"
   local started_at
   local denials
+  local actionable_denials
   local status=0
 
   started_at="$(date +%s)"
@@ -114,8 +145,12 @@ run_confined_suite() {
     "${SCRIPT_DIR}/smoke.sh" "${image}" || status=$?
   denials="$(read_denials "${started_at}")"
   if [[ -n "${denials}" ]]; then
-    printf '%s\n' "${denials}" >&2
-    fail "The kernel reported AppArmor denials"
+    actionable_denials="$(filter_actionable_denials <<<"${denials}")"
+    if [[ -n "${actionable_denials}" ]]; then
+      printf '%s\n' "${actionable_denials}" >&2
+      fail "The kernel reported unexpected AppArmor denials"
+    fi
+    log "kernel audit contained only documented non-blocking probes"
   fi
   ((status == 0)) || fail "Confined smoke suite failed with status ${status}"
 }

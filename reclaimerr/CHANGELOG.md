@@ -14,6 +14,8 @@
 - Custom AppArmor confinement and multi-architecture packaging for `amd64` and
   `aarch64`.
 - A source-visible patch correcting the upstream `/api/info/version` response.
+- A confinement-aware test process that loads the shipped AppArmor profile and
+  runs the full smoke suite under enforcement, matching Endurain's approach.
 
 ### Notes
 
@@ -21,3 +23,7 @@
   an HTTPS reverse proxy as described in `DOCS.md`.
 - Automatic move and delete operations remain upstream application features;
   review and back up media before enabling them.
+- The AppArmor audit filter recognizes non-blocking probes: Bash/`run.sh`
+  opening `/dev/tty`, granian probing its executable directory and the cgroup
+  CPU cap, and `python3` removing unused `urllib3` sources during startup.
+  Those paths remain denied; the application continues to run correctly.
