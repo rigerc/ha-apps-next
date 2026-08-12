@@ -1,0 +1,9 @@
+{
+  "timezone": "UTC",
+  "log_level": "INFO",
+  "log_retention_days": 30,
+  "command_workers": 2,
+  "cors_origins": "http://homeassistant.local:8000",
+  "proxy_trusted_hosts": "127.0.0.1,::1",
+  "cookie_secure": false
+}

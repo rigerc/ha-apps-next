@@ -1,0 +1,26 @@
+# Reclaimerr Home Assistant packaging modification
+# Modified: 2026-08-11
+# Upstream: 0.3.5 (a1d24a4fa6534aae70009b431f5328b022eef6f1)
+# Purpose: return version metadata values instead of a Python module repr.
+--- a/backend/api/routes/info/info.py
++++ b/backend/api/routes/info/info.py
+@@ -8,7 +8,7 @@
+ from sqlalchemy import and_, desc, func, select
+ from sqlalchemy.ext.asyncio import AsyncSession
+ 
+-from backend.core import __version__
++from backend.core.__version__ import __version__, program_name, program_url
+ from backend.core.auth import get_current_user, has_permission
+ from backend.database import get_db
+ from backend.database.models import (
+@@ -90,8 +90,8 @@
+     """Get application version."""
+     return {
+         "version": str(__version__),
+-        "program": __version__.program_name,
+-        "url": __version__.program_url,
++        "program": program_name,
++        "url": program_url,
+     }
+ 
+ 

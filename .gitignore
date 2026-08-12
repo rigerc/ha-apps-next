@@ -3,3 +3,7 @@ externals/
 .agents/
 .codex/
 .externals.json
+
+# Local workspace files
+/.project.json
+/docs/

@@ -1,0 +1,10 @@
+{
+  "timezone": "Europe/Amsterdam",
+  "log_level": "DEBUG",
+  "log_retention_days": 90,
+  "command_workers": 8,
+  "cors_origins": "https://reclaimerr.example.com,http://192.168.1.50:8000",
+  "proxy_trusted_hosts": "192.168.1.10,10.0.0.0/24,2001:db8::/64",
+  "cookie_secure": true,
+  "admin_password": "smoke-admin-password-do-not-log"
+}

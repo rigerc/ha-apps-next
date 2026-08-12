@@ -1,0 +1,41 @@
+name: Reclaimerr
+version: 0.3.5-1
+slug: reclaimerr
+description: Self-hosted media cleanup and deletion management for Home Assistant
+url: https://github.com/rigerc/ha-apps-next
+arch:
+  - aarch64
+  - amd64
+image: ghcr.io/rigerc/ha-addon-reclaimerr
+init: false
+startup: application
+stage: experimental
+backup: cold
+map:
+  - type: media
+    read_only: false
+ports:
+  8000/tcp: 8000
+ports_description:
+  8000/tcp: Reclaimerr web interface
+webui: http://[HOST]:[PORT:8000]/
+watchdog: http://[HOST]:[PORT:8000]/api/info/health
+timeout: 300
+apparmor: true
+options:
+  timezone: UTC
+  log_level: INFO
+  log_retention_days: 30
+  command_workers: 2
+  cors_origins: http://homeassistant.local:8000
+  proxy_trusted_hosts: 127.0.0.1,::1
+  cookie_secure: false
+schema:
+  timezone: str
+  log_level: list(DEBUG|INFO|WARNING|ERROR|CRITICAL)
+  log_retention_days: int
+  command_workers: int(1,8)
+  cors_origins: str
+  proxy_trusted_hosts: str
+  cookie_secure: bool
+  admin_password: password?

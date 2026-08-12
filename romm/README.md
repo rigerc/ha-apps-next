@@ -10,3 +10,9 @@ internal Valkey data in the app's private data directory.
 
 The web interface is available through the **Open Web UI** button on port
 `8080`.
+
+## First login
+
+RomM does not have a default username or password. On first launch, complete
+the setup wizard and choose the credentials for the initial account. This
+first account is created with the administrator role.

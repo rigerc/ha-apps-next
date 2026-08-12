@@ -1,0 +1,27 @@
+configuration:
+  timezone:
+    name: Time zone
+    description: IANA time zone used by Reclaimerr schedules and logs.
+  log_level:
+    name: Log level
+    description: Runtime logging level for Reclaimerr.
+  log_retention_days:
+    name: Log retention days
+    description: Number of days of rotated logs to retain; minimum 1.
+  command_workers:
+    name: Command workers
+    description: Number of durable background command executors, from 1 to 8.
+  cors_origins:
+    name: CORS origins
+    description: Comma-separated exact browser origins allowed for CORS requests.
+  proxy_trusted_hosts:
+    name: Trusted proxy hosts
+    description: Comma-separated proxy IPs or CIDRs allowed to supply forwarded headers.
+  cookie_secure:
+    name: Secure cookies
+    description: Mark authentication cookies Secure; enable only for HTTPS access.
+  admin_password:
+    name: Temporary admin password
+    description: First-admin creation or reset value; clear it after signing in.
+network:
+  8000/tcp: Reclaimerr web interface
