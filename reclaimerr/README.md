@@ -8,7 +8,8 @@ This repository provides an **unofficial Home Assistant package** for
 Reclaimerr 0.3.5. It is not sponsored, endorsed, or supported by the upstream
 Reclaimerr project. The app keeps its database, generated secrets, logs, and
 avatars in its private `/data/reclaimerr` directory and maps Home Assistant's
-`/media` directory read-write for configured path mappings and cleanup actions.
+`/media` and `/share` directories read-write for configured path mappings and
+cleanup actions.
 The package also carries a small published patch for the upstream version-info
 endpoint; all wrapper changes are available in this repository.
 

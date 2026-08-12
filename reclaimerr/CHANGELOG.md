@@ -11,6 +11,7 @@
 - Validated Home Assistant options for timezone, logging, workers, CORS,
   trusted proxies, secure cookies, and transient admin-password recovery.
 - Read-write `/media` mapping for configured library path mappings and cleanup.
+- Read-write `/share` mapping for libraries and files stored on the share tree.
 - Custom AppArmor confinement and multi-architecture packaging for `amd64` and
   `aarch64`.
 - A source-visible patch correcting the upstream `/api/info/version` response.

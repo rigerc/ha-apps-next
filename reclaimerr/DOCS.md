@@ -119,18 +119,18 @@ The complete persistent state is below `/data/reclaimerr`:
 - `logs/` — rotated application logs and audit information.
 - `static/avatars/` — uploaded user avatars and other generated static state.
 
-The app maps only Home Assistant's `/media` tree read-write. Configure
-Reclaimerr path mappings to the paths as they appear inside the app. No
-`/share` mapping, Home Assistant API, Supervisor API, host networking, or
-privileged access is required.
+The app maps Home Assistant's `/media` and `/share` trees read-write. Configure
+Reclaimerr path mappings to the paths as they appear inside the app. No Home
+Assistant API, Supervisor API, host networking, or privileged access is
+required.
 
 The service runs as root inside its protected container because Home Assistant
 media trees can contain files owned by different numeric users and groups; a
 fixed unprivileged UID cannot reliably perform configured moves and deletions.
 The custom AppArmor profile permits only `dac_override` for that filesystem
-case, limits writes to `/data/reclaimerr`, `/media`, and runtime temporary
-paths, and does not grant privileged mode or host-level administration. Keep
-protected mode enabled.
+case, limits writes to `/data/reclaimerr`, `/media`, `/share`, and runtime
+temporary paths, and does not grant privileged mode or host-level
+administration. Keep protected mode enabled.
 
 ### Destructive operations — read before enabling
 
@@ -138,14 +138,15 @@ Reclaimerr can move or delete real media files. A rule or scheduled task can
 make that operation automatic after its review period. Before enabling it:
 
 - take a tested backup of the media library and the Reclaimerr app data;
-- verify `/media` path mappings and any move destination carefully;
+- verify `/media` and `/share` path mappings and any move destination
+  carefully;
 - begin with automatic deletion disabled and run manual reviews;
 - confirm protections, pending requests, and fallback deletion settings;
 - test with disposable fixture media first.
 
 Moving or deleting media is an application action, not an app upgrade action.
-This package cannot recover files removed from `/media`; keep independent
-library backups and do not grant a broader mount than required.
+This package cannot recover files removed from `/media` or `/share`; keep
+independent library backups and do not grant a broader mount than required.
 
 ## External services
 
@@ -168,7 +169,8 @@ database:
 
 1. Stop Reclaimerr.
 2. Create a Home Assistant backup that includes this app and separately back up
-   the `/media` library (including any move destinations).
+   the `/media` and `/share` libraries used by path mappings (including any move
+   destinations).
 3. For a manual copy, preserve all of `/data/reclaimerr`, including
    `secrets.env`, and retain file ownership and permissions.
 4. Restore the app data and the matching media backup while Reclaimerr is
@@ -200,8 +202,8 @@ the matching pre-upgrade cold backup instead.
   selected, the task is enabled, and the task history does not show a pending
   protection or service error.
 - **Files are missing from candidates or moves fail:** check that the media
-  server paths match `/media` and that the app has read-write access to the
-  exact mapped directories.
+  server paths match `/media` or `/share` and that the app has read-write
+  access to the exact mapped directories.
 - **A configured service is offline:** disable it temporarily or inspect the
   task history; reconnect and run the relevant sync after it returns.
 - **Password recovery remains active:** clear `admin_password` in the app

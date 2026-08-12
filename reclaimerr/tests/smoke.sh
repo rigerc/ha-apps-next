@@ -8,6 +8,7 @@ TEST_ROOT="$(mktemp -d -t reclaimerr-smoke.XXXXXX)"
 readonly TEST_ROOT
 readonly DATA_DIR="${TEST_ROOT}/data"
 readonly MEDIA_DIR="${TEST_ROOT}/media"
+readonly SHARE_DIR="${TEST_ROOT}/share"
 readonly RESTORE_DATA_DIR="${TEST_ROOT}/restore-data"
 readonly FULL_DATA_DIR="${TEST_ROOT}/full-data"
 readonly UPGRADE_DATA_DIR="${TEST_ROOT}/upgrade-data"
@@ -38,7 +39,7 @@ cleanup() {
   # only this explicitly-created temporary tree before removing its parent.
   docker run --rm --entrypoint sh \
     --volume "${TEST_ROOT}:/test:rw" "${IMAGE}" \
-    -c 'rm -rf -- /test/data /test/media /test/restore-data /test/full-data /test/upgrade-data' \
+    -c 'rm -rf -- /test/data /test/media /test/share /test/restore-data /test/full-data /test/upgrade-data' \
     >/dev/null 2>&1 || true
   rm -rf -- "${TEST_ROOT}"
 }
@@ -47,15 +48,16 @@ trap cleanup EXIT
 write_options() {
   local options_json="$1"
 
-  mkdir -p -- "${DATA_DIR}" "${MEDIA_DIR}"
+  mkdir -p -- "${DATA_DIR}" "${MEDIA_DIR}" "${SHARE_DIR}"
   printf '%s\n' "${options_json}" >"${OPTIONS_FILE}"
-  chmod 0777 "${DATA_DIR}" "${MEDIA_DIR}"
+  chmod 0777 "${DATA_DIR}" "${MEDIA_DIR}" "${SHARE_DIR}"
 }
 
 start_container() {
   local name="$1"
   local data_dir="${2:-${DATA_DIR}}"
   local media_dir="${3:-${MEDIA_DIR}}"
+  local share_dir="${4:-${SHARE_DIR}}"
   local -a security_args=()
 
   CONTAINERS+=("${name}")
@@ -66,6 +68,7 @@ start_container() {
     --publish 127.0.0.1::8000 \
     --volume "${data_dir}:/data:rw" \
     --volume "${media_dir}:/media:rw" \
+    --volume "${share_dir}:/share:rw" \
     "${security_args[@]}" \
     "${IMAGE}" >/dev/null
 }
@@ -248,10 +251,23 @@ sibling_cleanup(root / "delete/delete.mkv")
   [[ -f "${destination_dir}/source/movie.mkv" ]]
   [[ -f "${destination_dir}/source/movie.en.srt" ]]
   [[ ! -e "${source_dir}" && ! -e "${delete_dir}" ]]
-  if docker inspect --format '{{json .Mounts}}' "${name}" \
-    | grep -Eiq '"(Source|Destination)":"/(share|supervisor)(/|"|$)'; then
+  if ! docker inspect --format '{{json .Mounts}}' "${name}" \
+    | grep -Eiq '"Destination":"/share".*"RW":true'; then
     return 1
   fi
+  if docker inspect --format '{{json .Mounts}}' "${name}" \
+    | grep -Eiq '"Destination":"/supervisor(/|"|$)'; then
+    return 1
+  fi
+  printf 'disposable share fixture\n' >"${SHARE_DIR}/shared.txt"
+  docker exec "${name}" python3 -c '
+from pathlib import Path
+
+path = Path("/share/shared.txt")
+assert path.read_text() == "disposable share fixture\n"
+path.write_text("updated share fixture\n")
+'
+  [[ "$(<"${SHARE_DIR}/shared.txt")" == "updated share fixture" ]]
   [[ "$(docker inspect --format '{{.HostConfig.NetworkMode}}' "${name}")" \
     != 'host' ]]
 }

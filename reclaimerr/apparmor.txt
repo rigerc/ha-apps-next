@@ -67,10 +67,12 @@ profile reclaimerr flags=(attach_disconnected,mediate_deleted) {
   /data/reclaimerr/ rwkl,
   /data/reclaimerr/** rwkl,
 
-  # The app's only host data mapping.  Keep the mount root writable so the
+  # The app's only host data mappings.  Keep the mount roots writable so the
   # wrapper can create its explicitly scoped fixture/path-mapping children.
   /media/ rw,
   /media/** rwkl,
+  /share/ rw,
+  /share/** rwkl,
 
   /run/ rwk,
   /run/** rwk,
