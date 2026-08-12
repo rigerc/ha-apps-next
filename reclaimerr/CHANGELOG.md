@@ -25,6 +25,7 @@
 - Automatic move and delete operations remain upstream application features;
   review and back up media before enabling them.
 - The AppArmor audit filter recognizes non-blocking probes: Bash/`run.sh`
-  opening `/dev/tty`, granian probing its executable directory and the cgroup
-  CPU cap, and `python3` removing unused `urllib3` sources during startup.
-  Those paths remain denied; the application continues to run correctly.
+  opening `/dev/tty`, granian probing the `/proc` root, its executable
+  directory, and the cgroup CPU cap, and `python3` removing unused `urllib3`
+  sources during startup. Those paths remain denied; the application continues
+  to run correctly.

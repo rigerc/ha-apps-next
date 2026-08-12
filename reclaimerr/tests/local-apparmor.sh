@@ -122,6 +122,11 @@ filter_actionable_denials() {
       && "${denial}" == *'comm="granian"'* ]]; then
       continue
     fi
+    if [[ "${denial}" == *'operation="open"'* \
+      && "${denial}" == *'name="/proc/"'* \
+      && "${denial}" == *'comm="granian"'* ]]; then
+      continue
+    fi
     if [[ "${denial}" == *'operation="unlink"'* \
       && "${denial}" == *'name="/usr/local/lib/python3'* \
       && "${denial}" == *'/site-packages/urllib3/'* \

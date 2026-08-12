@@ -25,11 +25,12 @@ The driver:
 6. removes its containers, temporary data, and AppArmor profile on exit.
 
 The audit filter recognizes exact non-blocking probes: Bash and `run.sh`
-opening `/dev/tty` without a TTY, granian probing its executable directory and
-the cgroup CPU cap, and Python removing unused `urllib3` source modules during
-startup compaction. Those deletion and discovery paths intentionally remain
-denied because the application keeps running correctly without them. Any other
-denial fails the process and is printed with its operation and path.
+opening `/dev/tty` without a TTY, granian probing its executable directory, the
+`/proc` root, and the cgroup CPU cap, and Python removing unused `urllib3`
+source modules during startup compaction. Those deletion and discovery paths
+intentionally remain denied because the application keeps running correctly
+without them. Any other denial fails the process and is printed with its
+operation and path.
 
 For a quick functional check without Home Assistant confinement, build an image
 and call the smoke suite directly:
