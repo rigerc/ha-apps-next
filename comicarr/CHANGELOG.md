@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.31.0-2
+
+- Allow `/usr/bin/mkdir` under AppArmor so the app can create its persistent
+  storage directories during Home Assistant startup.
+
 ## 0.31.0-1
 
 - Package Comicarr 0.31.0 for Home Assistant on `amd64` and `aarch64`.

@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@codex'
 created_date: '2026-08-13 15:28'
-updated_date: '2026-08-13 15:53'
+updated_date: '2026-08-13 15:54'
 labels: []
 dependencies: []
 references:
@@ -52,6 +52,8 @@ Vendored Comicarr v0.31.0 at commit 743b610bf118ae59aac38db000de51c2b0f022c5 int
 Final validation: shellcheck and bash syntax checks passed; YAML and JSON parsed; git diff whitespace check passed; AppArmor policy preprocessed with apparmor_parser in Ubuntu 24.04; local amd64 image built from the pinned upstream multi-arch digest; smoke suite verified the React UI, health API, HA storage paths, SQLite/config creation, full options, clean shutdown, /data persistence after restart, and invalid-option rejection.
 
 HA runtime follow-up: startup failed at run.sh:93 because the custom AppArmor profile allowed install and Python but omitted the resolved /usr/bin/mkdir executable. Added the narrow rix rule and a CI assertion for that exact runtime dependency. Verified command resolution in the packaged image, shell/static checks, and AppArmor preprocessing.
+
+Because PR #2 merged and published 0.31.0-1 before the AppArmor correction, bumped the repaired Home Assistant app release to 0.31.0-2 so Supervisor detects and installs the fixed image.
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
