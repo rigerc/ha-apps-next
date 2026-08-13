@@ -1,4 +1,45 @@
 {
   "timezone": "Etc/UTC",
-  "log_level": "normal"
+  "log_level": "normal",
+  "directories": {
+    "comics": "/media/comics",
+    "manga": "/media/manga",
+    "downloads": "/share/comicarr/downloads",
+    "torrent_watch": "/share/comicarr/watch"
+  },
+  "library": {
+    "create_folders": true,
+    "rename_files": false,
+    "file_operation": "move",
+    "folder_format": "$Series ($Year)",
+    "file_format": "$Series $Annual $Issue ($Year)",
+    "backup_on_start": false,
+    "backup_retention": 4
+  },
+  "scheduler": {
+    "rss_interval": 20,
+    "search_interval": 1440,
+    "download_scan_interval": 5
+  },
+  "torrents": {
+    "enabled": false,
+    "search_enabled": false,
+    "minimum_seeders": 0,
+    "client": "watchfolder"
+  },
+  "qbittorrent": {
+    "label": "comicarr",
+    "download_path": "/share/comicarr/downloads",
+    "load_action": "default"
+  },
+  "transmission": {
+    "download_path": "/share/comicarr/downloads"
+  },
+  "opds": {
+    "enabled": false,
+    "authentication": false,
+    "endpoint": "opds",
+    "page_size": 30,
+    "extended_metadata": false
+  }
 }

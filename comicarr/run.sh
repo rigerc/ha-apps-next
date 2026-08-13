@@ -5,10 +5,6 @@ set -euo pipefail
 
 readonly OPTIONS_FILE="/data/options.json"
 readonly DATA_DIR="/data/comicarr"
-readonly COMICS_DIR="/media/comics"
-readonly MANGA_DIR="/media/manga"
-readonly DOWNLOADS_DIR="/share/comicarr/downloads"
-readonly CONFIG_FILE="${DATA_DIR}/config.ini"
 readonly API_PORT="8090"
 
 log() {
@@ -88,48 +84,10 @@ load_options() {
   export TZ="${timezone}"
 }
 
-prepare_directories() {
-  umask 027
-  mkdir -p \
-    "${DATA_DIR}" \
-    "${DATA_DIR}/backups" \
-    "${COMICS_DIR}" \
-    "${MANGA_DIR}" \
-    "${DOWNLOADS_DIR}"
-}
-
-seed_config() {
-  [[ ! -e "${CONFIG_FILE}" ]] || return 0
-
-  log "Creating initial configuration with Home Assistant storage paths"
-  install -m 0600 /dev/null "${CONFIG_FILE}"
-  # Comicarr 0.31.0 assumes several default-valued sections exist during
-  # configure(), so its minimal INI mode cannot bootstrap a new install.
-  printf '%s\n' \
-    '[General]' \
-    'config_version = 18' \
-    'minimal_ini = False' \
-    'launch_browser = False' \
-    'destination_dir = /media/comics' \
-    'manga_destination_dir = /media/manga' \
-    'backup_location = /data/comicarr/backups' \
-    '' \
-    '[Interface]' \
-    'http_host = 0.0.0.0' \
-    'http_port = 8090' \
-    '' \
-    '[SABnzbd]' \
-    'sab_directory = /share/comicarr/downloads' \
-    '' \
-    '[DDL]' \
-    'ddl_location = /share/comicarr/downloads' \
-    >"${CONFIG_FILE}"
-}
-
 main() {
   load_options
-  prepare_directories
-  seed_config
+  umask 027
+  python3 /config_sync.py
 
   log "Starting Comicarr on 0.0.0.0:${API_PORT}"
   exec python3 /opt/comicarr/Comicarr.py \

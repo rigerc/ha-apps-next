@@ -22,6 +22,7 @@ profile comicarr flags=(attach_disconnected,mediate_deleted) {
   /bin/bash rix,
   /bin/dash rix,
   /bin/sh rix,
+  /config_sync.py r,
   /run.sh rix,
   /usr/bin/7z rix,
   /usr/bin/7za rix,

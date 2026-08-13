@@ -43,10 +43,11 @@ jobs:
           set -euo pipefail
           shellcheck comicarr/run.sh comicarr/tests/smoke.sh
           bash -n comicarr/run.sh comicarr/tests/smoke.sh
+          python3 -m py_compile comicarr/config_sync.py
           test ! -e comicarr/build.yaml
           ! grep -R --line-number --fixed-strings "BUILD_FROM" comicarr/Dockerfile comicarr/config.yaml
           ruby -e 'require "yaml"; YAML.load_file("comicarr/config.yaml"); YAML.load_file("comicarr/translations/en.yaml")'
-          jq empty comicarr/tests/options-default.json comicarr/tests/options-full.json
+          jq empty comicarr/tests/options-legacy.json comicarr/tests/options-default.json comicarr/tests/options-full.json
           if ! command -v apparmor_parser >/dev/null 2>&1; then
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends apparmor
@@ -54,7 +55,7 @@ jobs:
           apparmor_parser --skip-cache --preprocess comicarr/apparmor.txt >/dev/null
           grep -Fqx '  /usr/bin/mkdir rix,' comicarr/apparmor.txt
           version="$(awk '$1 == "version:" {print $2; exit}' comicarr/config.yaml)"
-          test "${version}" = "0.31.0-2"
+          test "${version}" = "0.31.0-3"
           grep -Fqx 'image: ghcr.io/rigerc/ha-addon-comicarr' comicarr/config.yaml
 
       - name: Read app metadata
