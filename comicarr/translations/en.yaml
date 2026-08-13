@@ -1,0 +1,9 @@
+configuration:
+  timezone:
+    name: Time zone
+    description: IANA time zone used by Comicarr schedules and logs.
+  log_level:
+    name: Log level
+    description: Console and file logging verbosity for Comicarr.
+network:
+  8090/tcp: Comicarr web interface

@@ -1,0 +1,164 @@
+name: Build and publish Comicarr
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/publish-comicarr.yaml"
+      - "comicarr/**"
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/publish-comicarr.yaml"
+      - "comicarr/**"
+  workflow_dispatch:
+
+env:
+  ARCHITECTURES: '["amd64", "aarch64"]'
+  IMAGE_NAME: "ha-addon-comicarr"
+  REGISTRY_PREFIX: "ghcr.io/rigerc"
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Validate and prepare
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      version: ${{ steps.normalize.outputs.version }}
+      name: ${{ steps.normalize.outputs.name }}
+      description: ${{ steps.normalize.outputs.description }}
+      url: ${{ steps.normalize.outputs.url }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.0
+
+      - name: Validate runtime, tests, metadata, and policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          shellcheck comicarr/run.sh comicarr/tests/smoke.sh
+          bash -n comicarr/run.sh comicarr/tests/smoke.sh
+          test ! -e comicarr/build.yaml
+          ! grep -R --line-number --fixed-strings "BUILD_FROM" comicarr/Dockerfile comicarr/config.yaml
+          ruby -e 'require "yaml"; YAML.load_file("comicarr/config.yaml"); YAML.load_file("comicarr/translations/en.yaml")'
+          jq empty comicarr/tests/options-default.json comicarr/tests/options-full.json
+          if ! command -v apparmor_parser >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends apparmor
+          fi
+          apparmor_parser --skip-cache --preprocess comicarr/apparmor.txt >/dev/null
+          version="$(awk '$1 == "version:" {print $2; exit}' comicarr/config.yaml)"
+          test "${version}" = "0.31.0-1"
+          grep -Fqx 'image: ghcr.io/rigerc/ha-addon-comicarr' comicarr/config.yaml
+
+      - name: Read app metadata
+        id: info
+        uses: home-assistant/actions/helpers/info@a7c616ce81ccda50150bf1595786c71b1883fabb
+        with:
+          path: "./comicarr"
+
+      - name: Normalize app metadata
+        id: normalize
+        run: |
+          set -euo pipefail
+          echo "version=${{ steps.info.outputs.version }}" >> "$GITHUB_OUTPUT"
+          echo "name=${{ steps.info.outputs.name }}" >> "$GITHUB_OUTPUT"
+          echo "description=${{ steps.info.outputs.description }}" >> "$GITHUB_OUTPUT"
+          echo "url=${{ steps.info.outputs.url }}" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare architecture matrix
+        id: matrix
+        uses: home-assistant/builder/actions/prepare-multi-arch-matrix@2026.06.0
+        with:
+          architectures: ${{ env.ARCHITECTURES }}
+          image-name: ${{ env.IMAGE_NAME }}
+          registry-prefix: ${{ env.REGISTRY_PREFIX }}
+
+  smoke:
+    name: Smoke-test amd64 image
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.0
+
+      - name: Build local amd64 image
+        run: |
+          docker build \
+            --build-arg BUILD_ARCH=amd64 \
+            --build-arg BUILD_COMMIT=${{ github.sha }} \
+            --build-arg BUILD_VERSION=${{ needs.prepare.outputs.version }} \
+            --tag local/ha-addon-comicarr:${{ needs.prepare.outputs.version }} \
+            comicarr
+
+      - name: Run smoke suite
+        run: comicarr/tests/smoke.sh local/ha-addon-comicarr:${{ needs.prepare.outputs.version }}
+
+  build:
+    name: Build ${{ matrix.arch }} image
+    needs:
+      - prepare
+      - smoke
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Build native architecture image
+        uses: home-assistant/builder/actions/build-image@2026.06.0
+        with:
+          arch: ${{ matrix.arch }}
+          build-args: |
+            BUILD_COMMIT=${{ github.sha }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          context: "./comicarr"
+          image: ${{ matrix.image }}
+          image-tags: |
+            ${{ needs.prepare.outputs.version }}
+            latest
+          labels: |
+            io.hass.type=app
+            io.hass.name=${{ needs.prepare.outputs.name }}
+            io.hass.description=${{ needs.prepare.outputs.description }}
+            io.hass.url=${{ needs.prepare.outputs.url }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cosign: "true"
+          push: ${{ github.event_name == 'push' }}
+          version: ${{ needs.prepare.outputs.version }}
+
+  manifest:
+    name: Publish signed multi-architecture manifest
+    needs:
+      - prepare
+      - build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      packages: write
+    steps:
+      - name: Publish generic multi-architecture manifest
+        uses: home-assistant/builder/actions/publish-multi-arch-manifest@2026.06.0
+        with:
+          architectures: ${{ env.ARCHITECTURES }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          cosign: "true"
+          image-name: ${{ env.IMAGE_NAME }}
+          image-tags: |
+            ${{ needs.prepare.outputs.version }}
+            latest
+          registry-prefix: ${{ env.REGISTRY_PREFIX }}
