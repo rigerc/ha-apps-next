@@ -46,6 +46,20 @@ stable Reclaimerr 0.3.5 with:
 Automatic deletion is opt-in. This is an unofficial package and is not
 sponsored or endorsed by the Reclaimerr project.
 
+### Comicarr
+
+Comicarr is an automated comic book and manga manager. The app packages stable
+Comicarr 0.31.0 with:
+
+- ComicVine and Metron metadata, release searching, and download-client support.
+- Comic and manga imports, post-processing, renaming, and metadata tagging.
+- Persistent application state below `/data/comicarr`.
+- Read-write `/media` libraries and `/share/comicarr/downloads` storage.
+- Signed `amd64` and `aarch64` images published to GHCR.
+
+This is an unofficial package and is not sponsored or endorsed by the
+Comicarr project.
+
 ## Installation
 
 1. In Home Assistant, open **Settings** > **Apps** > **App Store**.
@@ -55,7 +69,8 @@ sponsored or endorsed by the Reclaimerr project.
 4. For RomM only, install and start the official MariaDB app first.
 5. For Reclaimerr, review `/media` and `/share` path mappings and
    external-service options before starting it.
-6. Start the selected app and choose **Open Web UI**.
+6. For Comicarr, keep libraries below `/media` and downloads below `/share`.
+7. Start the selected app and choose **Open Web UI**.
 
 See each app's documentation for storage, configuration, networking, backup,
 and upgrade details.
