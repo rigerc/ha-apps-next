@@ -52,6 +52,7 @@ jobs:
             sudo apt-get install -y --no-install-recommends apparmor
           fi
           apparmor_parser --skip-cache --preprocess comicarr/apparmor.txt >/dev/null
+          grep -Fqx '  /usr/bin/mkdir rix,' comicarr/apparmor.txt
           version="$(awk '$1 == "version:" {print $2; exit}' comicarr/config.yaml)"
           test "${version}" = "0.31.0-1"
           grep -Fqx 'image: ghcr.io/rigerc/ha-addon-comicarr' comicarr/config.yaml

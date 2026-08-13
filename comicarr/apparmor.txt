@@ -29,6 +29,7 @@ profile comicarr flags=(attach_disconnected,mediate_deleted) {
   /usr/bin/env rix,
   /usr/bin/git rix,
   /usr/bin/install rix,
+  /usr/bin/mkdir rix,
   /usr/bin/python3* rix,
   /usr/bin/unrar* rix,
   /usr/lib/git-core/** rix,
