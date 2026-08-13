@@ -6,7 +6,9 @@ clients, imports completed downloads, and manages metadata.
 
 This Home Assistant App packages Comicarr 0.31.0 for `amd64` and `aarch64`.
 Application state is stored in the app backup, while comic libraries and
-downloads use Home Assistant's shared media directories.
+downloads use user-configurable paths below Home Assistant's `/media` and
+`/share` mounts. The app configuration also exposes selected `config.ini`-only
+library, scheduler, torrent-client, and OPDS settings.
 
 This is an unofficial package and is not sponsored or endorsed by the
 Comicarr project.

@@ -1,4 +1,53 @@
 {
   "timezone": "Europe/Amsterdam",
-  "log_level": "debug"
+  "log_level": "debug",
+  "directories": {
+    "comics": "/media/library/comics",
+    "manga": "/media/library/manga",
+    "downloads": "/share/downloads/comicarr",
+    "torrent_watch": "/share/watch/comicarr"
+  },
+  "library": {
+    "create_folders": true,
+    "rename_files": true,
+    "file_operation": "copy",
+    "folder_format": "$Publisher/$Series ($Year)",
+    "file_format": "$Series $Issue ($Year)",
+    "backup_on_start": true,
+    "backup_retention": 9
+  },
+  "scheduler": {
+    "rss_interval": 30,
+    "search_interval": 720,
+    "download_scan_interval": 3
+  },
+  "torrents": {
+    "enabled": true,
+    "search_enabled": true,
+    "minimum_seeders": 5,
+    "client": "qbittorrent"
+  },
+  "qbittorrent": {
+    "host": "http://qbittorrent:8080",
+    "username": "comicarr",
+    "password": "smoke-qb-secret",
+    "label": "comic-books",
+    "download_path": "/share/downloads/comicarr",
+    "load_action": "paused"
+  },
+  "transmission": {
+    "host": "http://transmission:9091",
+    "username": "comicarr",
+    "password": "smoke-transmission-secret",
+    "download_path": "/share/downloads/comicarr"
+  },
+  "opds": {
+    "enabled": true,
+    "authentication": true,
+    "endpoint": "catalog",
+    "username": "reader",
+    "password": "smoke-opds-secret",
+    "page_size": 60,
+    "extended_metadata": true
+  }
 }

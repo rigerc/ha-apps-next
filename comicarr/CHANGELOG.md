@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.31.0-3
+
+- Add Home Assistant configuration groups for library paths, download paths,
+  naming, scheduling, torrent clients, qBittorrent, Transmission, and OPDS.
+- Synchronize HA-managed values into `config.ini` on every start while
+  preserving unrelated settings and omitted credentials.
+- Validate every configured storage path below the writable `/media` or
+  `/share` mounts.
+
 ## 0.31.0-2
 
 - Allow `/usr/bin/mkdir` under AppArmor so the app can create its persistent

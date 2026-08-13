@@ -3,7 +3,7 @@
 FROM ghcr.io/frankieramirez/comicarr:0.31.0@sha256:5c4c55373c1d8032b9168c6fd31d7e601f0a6fa3930adc53e08e194c7e33077b
 
 ARG BUILD_ARCH
-ARG BUILD_VERSION="0.31.0-2"
+ARG BUILD_VERSION="0.31.0-3"
 ARG BUILD_COMMIT="unknown"
 
 USER root
@@ -11,8 +11,11 @@ USER root
 ENV PYTHONDONTWRITEBYTECODE=1
 
 COPY run.sh /run.sh
+COPY config_sync.py /config_sync.py
 
-RUN chmod 0755 /run.sh
+RUN \
+  chmod 0755 /run.sh \
+  && chmod 0644 /config_sync.py
 
 LABEL \
   io.hass.type="app" \

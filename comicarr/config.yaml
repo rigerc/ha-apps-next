@@ -1,5 +1,5 @@
 name: Comicarr
-version: 0.31.0-2
+version: 0.31.0-3
 slug: comicarr
 description: Automated comic book and manga management for Home Assistant
 url: https://github.com/rigerc/ha-apps-next
@@ -27,6 +27,82 @@ apparmor: true
 options:
   timezone: Etc/UTC
   log_level: normal
+  directories:
+    comics: /media/comics
+    manga: /media/manga
+    downloads: /share/comicarr/downloads
+    torrent_watch: /share/comicarr/watch
+  library:
+    create_folders: true
+    rename_files: false
+    file_operation: move
+    folder_format: "$Series ($Year)"
+    file_format: "$Series $Annual $Issue ($Year)"
+    backup_on_start: false
+    backup_retention: 4
+  scheduler:
+    rss_interval: 20
+    search_interval: 1440
+    download_scan_interval: 5
+  torrents:
+    enabled: false
+    search_enabled: false
+    minimum_seeders: 0
+    client: watchfolder
+  qbittorrent:
+    label: comicarr
+    download_path: /share/comicarr/downloads
+    load_action: default
+  transmission:
+    download_path: /share/comicarr/downloads
+  opds:
+    enabled: false
+    authentication: false
+    endpoint: opds
+    page_size: 30
+    extended_metadata: false
 schema:
   timezone: str
   log_level: list(warning|normal|debug)
+  directories:
+    comics: str
+    manga: str
+    downloads: str
+    torrent_watch: str
+  library:
+    create_folders: bool
+    rename_files: bool
+    file_operation: list(move|copy|hardlink|softlink)
+    folder_format: str(1,200)
+    file_format: str(1,200)
+    backup_on_start: bool
+    backup_retention: int(1,50)
+  scheduler:
+    rss_interval: int(10,10080)
+    search_interval: int(10,10080)
+    download_scan_interval: int(1,1440)
+  torrents:
+    enabled: bool
+    search_enabled: bool
+    minimum_seeders: int(0,100000)
+    client: list(watchfolder|utorrent|rtorrent|transmission|deluge|qbittorrent)
+  qbittorrent:
+    host: url?
+    username: str?
+    password: password?
+    label: str(1,100)
+    download_path: str
+    load_action: list(default|force_start|paused)
+  transmission:
+    host: url?
+    username: str?
+    password: password?
+    download_path: str
+  opds:
+    enabled: bool
+    authentication: bool
+    endpoint: match(^[A-Za-z0-9_-]+$)
+    username: str?
+    password: password?
+    page_size: int(1,500)
+    extended_metadata: bool

@@ -5,5 +5,138 @@ configuration:
   log_level:
     name: Log level
     description: Console and file logging verbosity for Comicarr.
+  directories:
+    name: Storage directories
+    description: Container paths below the writable /media or /share mounts.
+    fields:
+      comics:
+        name: Comic library
+        description: Root directory for organized comic files (DESTINATION_DIR).
+      manga:
+        name: Manga library
+        description: Root directory for organized manga files (MANGA_DESTINATION_DIR).
+      downloads:
+        name: Download directory
+        description: Shared SABnzbd and direct-download working directory.
+      torrent_watch:
+        name: Torrent watch directory
+        description: Directory where watchfolder mode writes torrent files.
+  library:
+    name: Library and files
+    description: Comicarr naming, file handling, folder creation, and backups.
+    fields:
+      create_folders:
+        name: Create series folders
+        description: Automatically create a folder when adding a series.
+      rename_files:
+        name: Rename files
+        description: Rename imported issues using the configured file format.
+      file_operation:
+        name: File operation
+        description: Move, copy, hard-link, or symbolic-link imported files.
+      folder_format:
+        name: Folder format
+        description: Comicarr template used to name series directories.
+      file_format:
+        name: File format
+        description: Comicarr template used to rename issue files.
+      backup_on_start:
+        name: Back up on start
+        description: Create a Comicarr database and configuration backup at startup.
+      backup_retention:
+        name: Backup retention
+        description: Number of Comicarr backup copies to retain.
+  scheduler:
+    name: Scheduler
+    description: Background job intervals in minutes.
+    fields:
+      rss_interval:
+        name: RSS interval
+        description: Minutes between RSS feed checks; minimum 10.
+      search_interval:
+        name: Search interval
+        description: Minutes between full missing-issue search sweeps; minimum 10.
+      download_scan_interval:
+        name: Download scan interval
+        description: Minutes between download-client status polls.
+  torrents:
+    name: Torrent downloads
+    description: Enable torrent acquisition and choose the active client.
+    fields:
+      enabled:
+        name: Enable torrents
+        description: Allow Comicarr to use torrent releases.
+      search_enabled:
+        name: Enable torrent search
+        description: Include configured Torznab and torrent sources in searches.
+      minimum_seeders:
+        name: Minimum seeders
+        description: Reject torrent candidates below this seeder count.
+      client:
+        name: Torrent client
+        description: Active client; configure its connection group when applicable.
+  qbittorrent:
+    name: qBittorrent
+    description: qBittorrent Web UI connection and download behavior.
+    fields:
+      host:
+        name: Web UI URL
+        description: Full qBittorrent Web UI URL including scheme and port.
+      username:
+        name: Username
+        description: qBittorrent Web UI username.
+      password:
+        name: Password
+        description: New qBittorrent password; leave empty to preserve the stored value.
+      label:
+        name: Category
+        description: Existing qBittorrent category applied to Comicarr downloads.
+      download_path:
+        name: Download path
+        description: Container path below /media or /share for qBittorrent downloads.
+      load_action:
+        name: Load action
+        description: Use client default behavior, force start, or add paused.
+  transmission:
+    name: Transmission
+    description: Transmission RPC connection and download directory.
+    fields:
+      host:
+        name: RPC URL
+        description: Full Transmission RPC URL including scheme and port.
+      username:
+        name: Username
+        description: Transmission RPC username.
+      password:
+        name: Password
+        description: New Transmission password; leave empty to preserve the stored value.
+      download_path:
+        name: Download path
+        description: Container path below /media or /share for Transmission downloads.
+  opds:
+    name: OPDS catalog
+    description: Serve the comic library to compatible reader applications.
+    fields:
+      enabled:
+        name: Enable OPDS
+        description: Enable Comicarr's OPDS catalog endpoint.
+      authentication:
+        name: Require authentication
+        description: Require HTTP Basic authentication for the OPDS catalog.
+      endpoint:
+        name: Endpoint
+        description: URL path segment for the OPDS catalog.
+      username:
+        name: Username
+        description: OPDS HTTP Basic authentication username.
+      password:
+        name: Password
+        description: New OPDS password; leave empty to preserve the stored value.
+      page_size:
+        name: Page size
+        description: Number of catalog entries returned per OPDS page.
+      extended_metadata:
+        name: Extended metadata
+        description: Include extended metadata in OPDS catalog entries.
 network:
   8090/tcp: Comicarr web interface
