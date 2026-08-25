@@ -32,7 +32,7 @@ profile romm flags=(attach_disconnected,mediate_deleted) {
   /init rix,
   /lib/** rm,
   /proc/** r,
-  /proc/[0-9]*/fd/{1,2} c,
+  /proc/[0-9]*/fd/{1,2} w,
   /romm/ r,
   /romm/library rwkl,
   /run.sh rix,
