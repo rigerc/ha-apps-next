@@ -1,0 +1,22 @@
+{
+  "storage_path": "/share/romm",
+  "database_name": "romm_full",
+  "base_url": "https://romm.example.com",
+  "log_level": "DEBUG",
+  "kiosk_mode": true,
+  "enable_rescan_on_filesystem_change": true,
+  "enable_scheduled_rescan": true,
+  "enable_scheduled_cleanup_orphaned_resources": true,
+  "scheduled_rescan_cron": "15 4 * * 2",
+  "session_secure_cookie": true,
+  "disable_emulator_js": true,
+  "disable_ruffle_rs": true,
+  "hasheous_api_enabled": false,
+  "igdb_client_id": "smoke-igdb-client",
+  "igdb_client_secret": "smoke-igdb-secret-must-not-leak",
+  "screenscraper_user": "smoke-screenscraper-user",
+  "screenscraper_password": "smoke-screenscraper-secret-must-not-leak",
+  "retroachievements_api_key": "smoke-ra-secret-must-not-leak",
+  "steamgriddb_api_key": "smoke-sgdb-secret-must-not-leak",
+  "mobygames_api_key": "smoke-moby-secret-must-not-leak"
+}

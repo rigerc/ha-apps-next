@@ -1,5 +1,17 @@
 # Changelog
 
+## 5.1.0-1
+
+- Update the packaged upstream release to RomM 5.1.0.
+- Add scheduled orphaned-resource cleanup and secure-session-cookie options.
+- Support upstream's nginx-to-Gunicorn TCP transport and archive handling.
+- Add automated fresh-install, persistence, and 5.0.0 database-upgrade tests.
+- The first start performs one-time database backfills and trigger migrations
+  and can take longer for large libraries. Create a full Home Assistant backup
+  before upgrading and do not interrupt the migration.
+- Emulator streaming remains unsupported because it requires separate broker
+  and emulator containers.
+
 ## 5.0.0-5
 
 - Allow libmagic to read its compiled MIME database under AppArmor so RomM

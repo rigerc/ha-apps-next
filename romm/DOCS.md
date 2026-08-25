@@ -5,7 +5,7 @@
 RomM is a self-hosted ROM manager and player with library scanning, metadata
 downloads, artwork management, browser-based play, and a responsive web UI.
 
-This app runs the full RomM 5.0.0 image. It discovers the Home Assistant
+This app runs the full RomM 5.1.0 image. It discovers the Home Assistant
 MariaDB service automatically and keeps RomM files under `/share/romm` by
 default.
 
@@ -76,9 +76,19 @@ Default: `INFO`
 
 - `enable_rescan_on_filesystem_change` watches the library for changes.
 - `enable_scheduled_rescan` enables cron-based rescans.
+- `enable_scheduled_cleanup_orphaned_resources` removes downloaded resources
+  that are no longer associated with a game on RomM's cleanup schedule.
 - `scheduled_rescan_cron` sets the rescan schedule.
 
 The default schedule is `0 3 * * *`.
+
+### `session_secure_cookie`
+
+Marks RomM session and CSRF cookies as secure. Enable this only when RomM is
+served through an HTTPS endpoint. Browsers do not send secure cookies over a
+plain HTTP connection.
+
+Default: `false`
 
 ### Playback and display options
 
@@ -110,6 +120,9 @@ This app uses a direct web UI rather than Home Assistant ingress. RomM relies
 on root-relative API and WebSocket routes and does not document deployment
 under the dynamic URL prefix used by ingress.
 
+Emulator streaming is not supported by this Home Assistant app. Upstream's
+streaming feature requires a separate broker and emulator containers.
+
 ## Backup and restore
 
 Back up all three parts of the installation:
@@ -123,7 +136,13 @@ For a consistent full restore, keep the RomM app data, `/share/romm`, and the
 MariaDB backup from the same Home Assistant backup.
 
 Before upgrading RomM, create a full Home Assistant backup and review the
-upstream RomM release notes.
+upstream RomM release notes. The first start after upgrading to 5.1.0 applies
+database migrations and may take substantially longer for large libraries. Do
+not interrupt it while migrations are running.
+
+If a reverse proxy or CDN caches responses, purge its cache once after the
+upgrade. A stale `index.html` can refer to frontend bundles that are no longer
+present in the new image.
 
 ## Troubleshooting
 
@@ -133,3 +152,5 @@ upstream RomM release notes.
 - **Web UI does not open:** inspect the app log for migration errors, then check
   that the configured host port is available.
 - **Generated links use the wrong address:** set `base_url` to the public URL.
+- **Blank or broken UI after upgrading:** purge the reverse proxy or CDN cache,
+  then reload the browser.

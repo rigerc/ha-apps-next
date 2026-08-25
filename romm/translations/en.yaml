@@ -20,9 +20,15 @@ configuration:
   enable_scheduled_rescan:
     name: Scheduled rescan
     description: Enable scheduled library rescans.
+  enable_scheduled_cleanup_orphaned_resources:
+    name: Scheduled resource cleanup
+    description: Enable scheduled cleanup of orphaned downloaded resources.
   scheduled_rescan_cron:
     name: Scheduled rescan cron
     description: Cron expression used for scheduled library rescans.
+  session_secure_cookie:
+    name: Secure session cookies
+    description: Send session and CSRF cookies only over HTTPS.
   disable_emulator_js:
     name: Disable EmulatorJS
     description: Disable in-browser gameplay through EmulatorJS.

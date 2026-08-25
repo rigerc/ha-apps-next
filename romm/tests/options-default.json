@@ -1,11 +1,13 @@
 {
   "storage_path": "/share/romm",
-  "database_name": "romm",
+  "database_name": "romm_smoke",
   "log_level": "INFO",
   "kiosk_mode": false,
   "enable_rescan_on_filesystem_change": false,
   "enable_scheduled_rescan": false,
+  "enable_scheduled_cleanup_orphaned_resources": false,
   "scheduled_rescan_cron": "0 3 * * *",
+  "session_secure_cookie": false,
   "disable_emulator_js": false,
   "disable_ruffle_rs": false,
   "hasheous_api_enabled": true

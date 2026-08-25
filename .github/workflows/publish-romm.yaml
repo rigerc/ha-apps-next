@@ -25,7 +25,7 @@ permissions:
 
 jobs:
   prepare:
-    name: Prepare build
+    name: Validate and prepare
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
@@ -37,29 +37,45 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v7.0.0
 
-      - name: Validate runtime files
+      - name: Validate runtime, tests, metadata, and policy
+        shell: bash
         run: |
-          shellcheck romm/run.sh
-          bash -n romm/run.sh
-          jq empty romm/tests/options.json
+          set -euo pipefail
+          shellcheck romm/run.sh romm/tests/smoke.sh romm/tests/local-apparmor.sh
+          bash -n romm/run.sh romm/tests/smoke.sh romm/tests/local-apparmor.sh
+          python3 -m py_compile romm/tests/supervisor_mock.py
+          test ! -e romm/build.yaml
+          ! grep -R --line-number --fixed-strings "BUILD_FROM" romm/Dockerfile romm/config.yaml
+          ruby -e 'require "yaml"; YAML.load_file("romm/config.yaml"); YAML.load_file("romm/translations/en.yaml")'
+          jq empty romm/tests/options-default.json romm/tests/options-full.json
+          if ! command -v apparmor_parser >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends apparmor
+          fi
+          apparmor_parser --skip-cache --preprocess romm/apparmor.txt >/dev/null
+          version="$(awk '$1 == "version:" {print $2; exit}' romm/config.yaml)"
+          test "${version}" = "5.1.0-1"
+          grep -Fqx 'image: ghcr.io/rigerc/ha-addon-romm' romm/config.yaml
+          grep -Fq 'ARG ROMM_VERSION="5.1.0"' romm/Dockerfile
+          grep -Fq 'ARG BUILD_VERSION="5.1.0-1"' romm/Dockerfile
+          grep -Fq 'Starting RomM 5.1.0' romm/run.sh
+          grep -Fq '## 5.1.0-1' romm/CHANGELOG.md
 
       - name: Read app metadata
         id: info
-        uses: home-assistant/actions/helpers/info@master
+        uses: home-assistant/actions/helpers/info@a7c616ce81ccda50150bf1595786c71b1883fabb
         with:
           path: "./romm"
 
       - name: Normalize app metadata
         id: normalize
+        shell: bash
         run: |
-          version=${{ steps.info.outputs.version }}
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-          name=${{ steps.info.outputs.name }}
-          echo "name=${name}" >> "$GITHUB_OUTPUT"
-          description=${{ steps.info.outputs.description }}
-          echo "description=${description}" >> "$GITHUB_OUTPUT"
-          url=${{ steps.info.outputs.url }}
-          echo "url=${url}" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          echo "version=${{ steps.info.outputs.version }}" >> "$GITHUB_OUTPUT"
+          echo "name=${{ steps.info.outputs.name }}" >> "$GITHUB_OUTPUT"
+          echo "description=${{ steps.info.outputs.description }}" >> "$GITHUB_OUTPUT"
+          echo "url=${{ steps.info.outputs.url }}" >> "$GITHUB_OUTPUT"
 
       - name: Prepare architecture matrix
         id: matrix
@@ -69,9 +85,43 @@ jobs:
           image-name: ${{ env.IMAGE_NAME }}
           registry-prefix: ${{ env.REGISTRY_PREFIX }}
 
+  smoke:
+    name: Smoke-test amd64 image
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.0
+
+      - name: Build local amd64 image
+        run: |
+          docker build \
+            --build-arg BUILD_ARCH=amd64 \
+            --build-arg BUILD_COMMIT=${{ github.sha }} \
+            --build-arg BUILD_VERSION=${{ needs.prepare.outputs.version }} \
+            --tag local/ha-addon-romm:${{ needs.prepare.outputs.version }} \
+            romm
+
+      - name: Run smoke and database-upgrade suite
+        run: |
+          romm/tests/smoke.sh \
+            local/ha-addon-romm:${{ needs.prepare.outputs.version }}
+
+      - name: Install AppArmor test tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends apparmor
+
+      - name: Run enforced AppArmor suite
+        run: |
+          romm/tests/local-apparmor.sh \
+            local/ha-addon-romm:${{ needs.prepare.outputs.version }}
+
   build:
     name: Build ${{ matrix.arch }} image
-    needs: prepare
+    needs:
+      - prepare
+      - smoke
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
@@ -86,10 +136,12 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Build image
+      - name: Build native architecture image
         uses: home-assistant/builder/actions/build-image@2026.06.0
         with:
           arch: ${{ matrix.arch }}
+          build-args: |
+            BUILD_COMMIT=${{ github.sha }}
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
           context: "./romm"
           image: ${{ matrix.image }}
@@ -101,11 +153,13 @@ jobs:
             io.hass.name=${{ needs.prepare.outputs.name }}
             io.hass.description=${{ needs.prepare.outputs.description }}
             io.hass.url=${{ needs.prepare.outputs.url }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cosign: "true"
           push: ${{ github.event_name == 'push' }}
           version: ${{ needs.prepare.outputs.version }}
 
   manifest:
-    name: Publish multi-architecture manifest
+    name: Publish signed multi-architecture manifest
     needs:
       - prepare
       - build
@@ -115,11 +169,12 @@ jobs:
       id-token: write
       packages: write
     steps:
-      - name: Publish manifest
+      - name: Publish generic multi-architecture manifest
         uses: home-assistant/builder/actions/publish-multi-arch-manifest@2026.06.0
         with:
           architectures: ${{ env.ARCHITECTURES }}
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          cosign: "true"
           image-name: ${{ env.IMAGE_NAME }}
           image-tags: |
             ${{ needs.prepare.outputs.version }}
