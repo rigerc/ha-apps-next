@@ -1,5 +1,5 @@
 name: RomM
-version: 5.0.0-5
+version: 5.1.0-1
 slug: romm
 description: Self-hosted ROM manager and player for Home Assistant
 url: https://github.com/rigerc/ha-apps-next
@@ -31,7 +31,9 @@ options:
   kiosk_mode: false
   enable_rescan_on_filesystem_change: false
   enable_scheduled_rescan: false
+  enable_scheduled_cleanup_orphaned_resources: false
   scheduled_rescan_cron: "0 3 * * *"
+  session_secure_cookie: false
   disable_emulator_js: false
   disable_ruffle_rs: false
   hasheous_api_enabled: true
@@ -43,7 +45,9 @@ schema:
   kiosk_mode: bool
   enable_rescan_on_filesystem_change: bool
   enable_scheduled_rescan: bool
+  enable_scheduled_cleanup_orphaned_resources: bool
   scheduled_rescan_cron: str
+  session_secure_cookie: bool
   disable_emulator_js: bool
   disable_ruffle_rs: bool
   hasheous_api_enabled: bool

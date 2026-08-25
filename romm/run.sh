@@ -255,8 +255,14 @@ main() {
   ENABLE_SCHEDULED_RESCAN="$(
     option_bool "enable_scheduled_rescan" false
   )"
+  ENABLE_SCHEDULED_CLEANUP_ORPHANED_RESOURCES="$(
+    option_bool "enable_scheduled_cleanup_orphaned_resources" false
+  )"
   SCHEDULED_RESCAN_CRON="$(
     option_string "scheduled_rescan_cron" "${DEFAULT_RESCAN_CRON}"
+  )"
+  ROMM_SESSION_SECURE_COOKIE="$(
+    option_bool "session_secure_cookie" false
   )"
   DISABLE_EMULATOR_JS="$(option_bool "disable_emulator_js" false)"
   DISABLE_RUFFLE_RS="$(option_bool "disable_ruffle_rs" false)"
@@ -275,7 +281,9 @@ main() {
   export KIOSK_MODE
   export ENABLE_RESCAN_ON_FILESYSTEM_CHANGE
   export ENABLE_SCHEDULED_RESCAN
+  export ENABLE_SCHEDULED_CLEANUP_ORPHANED_RESOURCES
   export SCHEDULED_RESCAN_CRON
+  export ROMM_SESSION_SECURE_COOKIE
   export DISABLE_EMULATOR_JS
   export DISABLE_RUFFLE_RS
   export HASHEOUS_API_ENABLED
@@ -298,7 +306,7 @@ main() {
   cleanup
   trap - EXIT
 
-  log "Starting RomM 5.0.0"
+  log "Starting RomM 5.1.0"
   exec /docker-entrypoint.sh /init
 }
 
